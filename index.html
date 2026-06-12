@@ -164,7 +164,7 @@
     .pain-card p { font-size: 0.83rem; color: #556; line-height: 1.65; }
 
     /* ── Features ── */
-    .features { padding: 100px 60px; background: #fff; }
+    .features { padding: 100px 60px; background: #fafcff; }
     .sec-header { text-align: center; margin-bottom: 60px; }
     .sec-header h2 {
       font-size: 2.3rem; font-weight: 800; letter-spacing: -0.8px;
@@ -233,7 +233,7 @@
     .demo-before { border-right: 1px solid #f0f0f0; }
 
     /* ── How it works ── */
-    .how { padding: 100px 60px; background: #fff; }
+    .how { padding: 100px 60px; background: #f5f9ff; }
     .steps {
       display: flex; justify-content: center; align-items: flex-start;
       gap: 0; max-width: 860px; margin: 0 auto; flex-wrap: wrap;
@@ -338,16 +338,40 @@
 
     /* ── Footer ── */
     footer {
-      background: #0a1628; color: #3a5575; padding: 44px 60px;
+      background: #f0f6ff; color: #8bacc8; padding: 40px 60px;
       display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 20px; border-top: 1px solid rgba(59,130,246,0.1);
+      flex-wrap: wrap; gap: 20px; border-top: 1px solid #dbeafe;
     }
     .footer-logo { font-size: 1.05rem; font-weight: 800; color: #3b82f6; }
     .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
-    .footer-links a { color: #3a5575; text-decoration: none; font-size: 0.83rem; transition: color 0.15s; }
-    .footer-links a:hover { color: #7aadda; }
+    .footer-links a { color: #8bacc8; text-decoration: none; font-size: 0.83rem; transition: color 0.15s; }
+    .footer-links a:hover { color: #3b82f6; }
     .footer-copy { font-size: 0.8rem; }
     #mockup-before, #mockup-after { transition: opacity 0.28s ease; }
+
+    /* ── Steps active highlight ── */
+    .step { transition: transform 0.35s ease; }
+    .step.active .step-num {
+      transform: scale(1.22);
+      box-shadow: 0 8px 28px rgba(59,130,246,0.5);
+    }
+    .step-num { transition: transform 0.35s ease, box-shadow 0.35s ease; }
+    .step.active h3 { color: #3b82f6; }
+    .step h3 { transition: color 0.3s; }
+
+    /* ── Button bling ── */
+    @keyframes ctaBling {
+      0%,100% {
+        box-shadow: 0 4px 20px rgba(59,130,246,0.3), 0 0 0 0 rgba(147,197,253,0);
+      }
+      40% {
+        box-shadow: 0 6px 28px rgba(59,130,246,0.55), 0 0 0 5px rgba(147,197,253,0.28);
+      }
+      65% {
+        box-shadow: 0 6px 28px rgba(59,130,246,0.4), 0 0 0 10px rgba(147,197,253,0.08);
+      }
+    }
+    .btn-bling { animation: ctaBling 2.4s ease-in-out infinite; }
 
     /* ── Responsive ── */
     @media (max-width: 900px) {
@@ -387,7 +411,7 @@
     <h1>Write English Like a <span class="hl">Native Speaker</span></h1>
     <p>Stop worrying if your English sounds awkward. WriteMate instantly rewrites your text to sound natural, confident, and native — no matter your level.</p>
     <div class="hero-actions">
-      <a href="https://chromewebstore.google.com" class="btn-primary" id="cta-btn">Add to Chrome — It's Free</a>
+      <a href="https://chromewebstore.google.com" class="btn-primary btn-bling" id="cta-btn">Add to Chrome — It's Free</a>
       <a href="#demo" class="btn-ghost">See it in action →</a>
     </div>
     <p class="hero-hint">Works on Gmail, Google Docs, LinkedIn, and any website.</p>
@@ -630,7 +654,7 @@
     <div class="cta-badge">✦ Free to get started</div>
     <h2>Start Writing Like a<br>Native Speaker Today</h2>
     <p>Join writers from India, Japan, Korea, Southeast Asia, and beyond who use WriteMate every day.</p>
-    <a href="https://chromewebstore.google.com" class="btn-white" id="final-btn">Add to Chrome — It's Free</a>
+    <a href="https://chromewebstore.google.com" class="btn-white btn-bling" id="final-btn">Add to Chrome — It's Free</a>
     <p class="cta-sub">No credit card required · Free plan included</p>
   </div>
 </section>
@@ -648,13 +672,57 @@
 </footer>
 
 <script>
-  function showDemo(type, btn) {
+  /* ── Demo before/after auto-scroll ── */
+  const demoTypes = ['email', 'essay', 'linkedin'];
+  const demoBtns = Array.from(document.querySelectorAll('.demo-tab-btn'));
+  let demoIdx = 0;
+  let demoPaused = false;
+  let demoResumeTimer;
+  let demoTimer;
+
+  function showDemo(type, btn, byUser) {
     document.querySelectorAll('.demo-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.demo-tab-btn').forEach(b => b.classList.remove('active'));
+    demoBtns.forEach(b => b.classList.remove('active'));
     document.getElementById('demo-' + type).classList.add('active');
     btn.classList.add('active');
+    demoIdx = demoTypes.indexOf(type);
+    if (byUser) {
+      demoPaused = true;
+      clearTimeout(demoResumeTimer);
+      demoResumeTimer = setTimeout(() => { demoPaused = false; }, 5000);
+    }
   }
 
+  demoBtns.forEach((btn, i) => {
+    btn.addEventListener('click', function() { showDemo(demoTypes[i], this, true); });
+  });
+
+  demoTimer = setInterval(() => {
+    if (demoPaused) return;
+    demoIdx = (demoIdx + 1) % demoTypes.length;
+    const panel = document.getElementById('demo-' + demoTypes[demoIdx]);
+    panel.style.opacity = '0';
+    demoBtns.forEach(b => b.classList.remove('active'));
+    demoBtns[demoIdx].classList.add('active');
+    document.querySelectorAll('.demo-panel').forEach(p => p.classList.remove('active'));
+    panel.classList.add('active');
+    panel.style.opacity = '0';
+    requestAnimationFrame(() => { panel.style.transition = 'opacity 0.4s'; panel.style.opacity = '1'; });
+    setTimeout(() => { panel.style.transition = ''; }, 450);
+  }, 3500);
+
+  /* ── Steps sequential highlight ── */
+  const steps = Array.from(document.querySelectorAll('.step'));
+  let stepIdx = 0;
+  function highlightStep() {
+    steps.forEach(s => s.classList.remove('active'));
+    steps[stepIdx].classList.add('active');
+    stepIdx = (stepIdx + 1) % steps.length;
+  }
+  highlightStep();
+  setInterval(highlightStep, 1600);
+
+  /* ── Ext-popup mockup auto-cycle ── */
   const extTabs = Array.from(document.querySelectorAll('.ext-tab'));
   const mockBefore = document.getElementById('mockup-before');
   const mockAfter = document.getElementById('mockup-after');
