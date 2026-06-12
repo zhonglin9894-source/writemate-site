@@ -3,115 +3,631 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WriteMate – Write English Like a Native</title>
+  <title>WriteMate – Write English Like a Native Speaker</title>
+  <meta name="description" content="WriteMate is a Chrome extension that rewrites your English to sound natural, professional, and native — in one click. Perfect for ESL writers and students.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1a1a1a; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1a1a1a;
+      background: #fff;
+      -webkit-font-smoothing: antialiased;
+    }
 
-    nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 60px; border-bottom: 1px solid #f0f0f0; }
-    nav .logo { font-size: 1.3rem; font-weight: 700; color: #6c47ff; }
-    nav a { text-decoration: none; color: #555; margin-left: 28px; font-size: 0.95rem; }
-    nav a:hover { color: #6c47ff; }
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 60px; height: 64px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .logo { font-size: 1.2rem; font-weight: 800; color: #6c47ff; letter-spacing: -0.3px; }
+    .nav-links { display: flex; align-items: center; gap: 4px; }
+    .nav-links a {
+      text-decoration: none; color: #555; font-size: 0.9rem; font-weight: 500;
+      padding: 8px 16px; border-radius: 8px; transition: all 0.15s;
+    }
+    .nav-links a:hover { color: #6c47ff; background: #f5f3ff; }
+    .nav-cta { background: #6c47ff !important; color: #fff !important; font-weight: 600 !important; }
+    .nav-cta:hover { background: #5a38e0 !important; }
 
-    .hero { text-align: center; padding: 100px 24px 80px; background: linear-gradient(135deg, #f5f3ff 0%, #fff 60%); }
-    .hero h1 { font-size: 3rem; font-weight: 800; line-height: 1.2; max-width: 700px; margin: 0 auto 20px; }
-    .hero h1 span { color: #6c47ff; }
-    .hero p { font-size: 1.15rem; color: #555; max-width: 520px; margin: 0 auto 40px; line-height: 1.7; }
-    .btn { display: inline-block; background: #6c47ff; color: #fff; padding: 14px 36px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; }
-    .btn:hover { background: #5a38e0; }
-    .hint { margin-top: 14px; font-size: 0.85rem; color: #999; }
+    /* ── Hero ── */
+    .hero {
+      display: flex; align-items: center; justify-content: center;
+      gap: 80px; padding: 100px 60px 80px;
+      background: linear-gradient(160deg, #f8f5ff 0%, #fff 50%, #f0f4ff 100%);
+      min-height: 90vh; overflow: hidden;
+    }
+    .hero-text { max-width: 560px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #f0ebff; color: #6c47ff;
+      font-size: 0.78rem; font-weight: 600;
+      padding: 6px 14px; border-radius: 20px; margin-bottom: 24px; letter-spacing: 0.3px;
+    }
+    .hero h1 {
+      font-size: 3.6rem; font-weight: 900; line-height: 1.1;
+      letter-spacing: -1.5px; margin-bottom: 24px; color: #0d0d1a;
+    }
+    .hero h1 .hl { color: #6c47ff; }
+    .hero > .hero-text > p {
+      font-size: 1.1rem; color: #555; line-height: 1.75; margin-bottom: 40px; max-width: 480px;
+    }
+    .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #6c47ff; color: #fff; padding: 14px 30px;
+      border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.97rem;
+      transition: all 0.2s; box-shadow: 0 4px 20px rgba(108,71,255,0.35);
+    }
+    .btn-primary:hover { background: #5a38e0; transform: translateY(-1px); box-shadow: 0 6px 28px rgba(108,71,255,0.45); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #6c47ff; font-weight: 600; font-size: 0.92rem;
+      text-decoration: none; padding: 14px 22px; border-radius: 10px;
+      border: 1.5px solid #e0d9ff; transition: all 0.2s;
+    }
+    .btn-ghost:hover { background: #f5f3ff; border-color: #6c47ff; }
+    .hero-hint { font-size: 0.8rem; color: #aaa; }
 
-    .features { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; padding: 80px 40px; background: #fff; }
-    .feature { max-width: 260px; text-align: center; }
-    .feature .icon { font-size: 2.2rem; margin-bottom: 16px; }
-    .feature h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
-    .feature p { font-size: 0.9rem; color: #666; line-height: 1.6; }
+    /* Extension Mockup */
+    .hero-visual { flex-shrink: 0; }
+    .mockup-wrap { position: relative; width: 360px; }
+    .mockup-glow {
+      position: absolute; width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(108,71,255,0.22) 0%, transparent 70%);
+      top: 50%; left: 50%; transform: translate(-50%,-50%);
+      border-radius: 50%; pointer-events: none;
+    }
+    .ext-popup {
+      background: #16162a; border-radius: 16px; overflow: hidden; width: 340px;
+      box-shadow: 0 28px 72px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.07);
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .ext-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 18px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .ext-title { color: #fff; font-size: 0.93rem; font-weight: 700; }
+    .ext-close { color: #555; font-size: 1.1rem; }
+    .ext-tabs {
+      display: flex; padding: 10px 12px 0; gap: 4px; overflow-x: auto;
+    }
+    .ext-tabs::-webkit-scrollbar { display: none; }
+    .ext-tab {
+      padding: 5px 11px; border-radius: 7px; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; color: #777; white-space: nowrap;
+      border: none; background: transparent; transition: all 0.15s; font-family: inherit;
+    }
+    .ext-tab.active { background: #6c47ff; color: #fff; }
+    .ext-tab:hover:not(.active) { background: rgba(255,255,255,0.06); color: #ccc; }
+    .ext-body { padding: 14px 18px; }
+    .ext-lbl { font-size: 0.7rem; color: #555; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ext-before {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; color: #999;
+      margin-bottom: 8px; line-height: 1.55;
+    }
+    .ext-arrow { text-align: center; color: #6c47ff; font-size: 0.9rem; margin: 4px 0; }
+    .ext-after {
+      background: rgba(108,71,255,0.13); border: 1px solid rgba(108,71,255,0.3);
+      border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; color: #ddd8ff;
+      line-height: 1.55;
+    }
+    .ext-actions { display: flex; gap: 7px; padding: 8px 18px 16px; }
+    .ext-btn {
+      flex: 1; padding: 8px; border-radius: 7px; font-size: 0.76rem; font-weight: 600;
+      border: none; cursor: pointer; transition: all 0.15s; font-family: inherit;
+    }
+    .ext-btn-p { background: #6c47ff; color: #fff; }
+    .ext-btn-s { background: rgba(255,255,255,0.06); color: #bbb; }
 
-    .how { background: #f9f9fb; padding: 80px 40px; text-align: center; }
-    .how h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 48px; }
-    .steps { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
-    .step { max-width: 200px; }
-    .step .num { width: 40px; height: 40px; background: #6c47ff; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; margin: 0 auto 14px; }
-    .step p { font-size: 0.9rem; color: #555; line-height: 1.6; }
+    /* ── Trust bar ── */
+    .trust-bar {
+      display: flex; justify-content: center; align-items: center;
+      gap: 48px; padding: 26px 60px;
+      background: #fff; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap;
+    }
+    .trust-item { display: flex; align-items: center; gap: 9px; color: #666; font-size: 0.86rem; font-weight: 500; }
+    .trust-item strong { color: #1a1a1a; }
 
-    .cta { text-align: center; padding: 80px 24px; background: #6c47ff; color: #fff; }
-    .cta h2 { font-size: 2rem; font-weight: 700; margin-bottom: 16px; }
-    .cta p { font-size: 1rem; margin-bottom: 36px; opacity: 0.85; }
-    .btn-white { display: inline-block; background: #fff; color: #6c47ff; padding: 14px 36px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+    /* ── Pain section ── */
+    .pain { background: #0d0d1a; color: #fff; padding: 100px 60px; text-align: center; }
+    .sec-label {
+      font-size: 0.74rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: #6c47ff; margin-bottom: 14px;
+    }
+    .pain h2 {
+      font-size: 2.5rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px;
+      margin-bottom: 18px; max-width: 680px; margin-left: auto; margin-right: auto;
+    }
+    .pain > p {
+      font-size: 1rem; color: #888; max-width: 540px;
+      margin: 0 auto 60px; line-height: 1.7;
+    }
+    .pain-cards { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .pain-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px; padding: 28px 26px; max-width: 275px; text-align: left;
+      transition: all 0.2s;
+    }
+    .pain-card:hover { border-color: rgba(108,71,255,0.4); background: rgba(108,71,255,0.06); }
+    .pain-emoji { font-size: 1.7rem; margin-bottom: 14px; }
+    .pain-card h3 { font-size: 0.92rem; font-weight: 700; margin-bottom: 8px; color: #e8e8f5; }
+    .pain-card p { font-size: 0.83rem; color: #777; line-height: 1.65; }
 
-    footer { text-align: center; padding: 32px 24px; font-size: 0.85rem; color: #999; border-top: 1px solid #f0f0f0; }
-    footer a { color: #999; text-decoration: none; margin: 0 12px; }
-    footer a:hover { color: #6c47ff; }
+    /* ── Features ── */
+    .features { padding: 100px 60px; background: #fff; }
+    .sec-header { text-align: center; margin-bottom: 60px; }
+    .sec-header h2 {
+      font-size: 2.3rem; font-weight: 800; letter-spacing: -0.8px;
+      margin-bottom: 14px; color: #0d0d1a;
+    }
+    .sec-header p { font-size: 1rem; color: #666; max-width: 500px; margin: 0 auto; line-height: 1.7; }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px; max-width: 1100px; margin: 0 auto;
+    }
+    .feat-card {
+      padding: 30px; border-radius: 16px; border: 1.5px solid #f0f0f8;
+      transition: all 0.25s; position: relative; overflow: hidden;
+    }
+    .feat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #6c47ff, #a78bfa);
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .feat-card:hover { border-color: #e0d9ff; box-shadow: 0 8px 32px rgba(108,71,255,0.1); transform: translateY(-2px); }
+    .feat-card:hover::before { opacity: 1; }
+    .feat-icon {
+      width: 46px; height: 46px; background: #f5f3ff; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 18px;
+    }
+    .feat-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; color: #0d0d1a; }
+    .feat-card p { font-size: 0.85rem; color: #666; line-height: 1.65; }
+    .feat-tag {
+      display: inline-block; margin-top: 12px; font-size: 0.73rem; font-weight: 600;
+      color: #6c47ff; background: #f5f3ff; padding: 3px 10px; border-radius: 20px;
+    }
+
+    /* ── Demo ── */
+    .demo { background: #f8f5ff; padding: 100px 60px; }
+    .demo-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 36px; }
+    .demo-tab-btn {
+      padding: 9px 20px; border-radius: 8px; font-size: 0.86rem; font-weight: 600;
+      cursor: pointer; border: 1.5px solid #e0d9ff; background: transparent;
+      color: #666; transition: all 0.2s; font-family: inherit;
+    }
+    .demo-tab-btn.active { background: #6c47ff; color: #fff; border-color: #6c47ff; }
+    .demo-tab-btn:hover:not(.active) { border-color: #6c47ff; color: #6c47ff; }
+    .demo-content { max-width: 840px; margin: 0 auto; }
+    .demo-panel { display: none; }
+    .demo-panel.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .demo-compare {
+      display: grid; grid-template-columns: 1fr 44px 1fr;
+      align-items: stretch; background: #fff; border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(108,71,255,0.1); overflow: hidden;
+    }
+    .demo-side { padding: 32px; }
+    .demo-side-lbl {
+      font-size: 0.73rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 12px;
+    }
+    .demo-before .demo-side-lbl { color: #f59e0b; }
+    .demo-after .demo-side-lbl { color: #6c47ff; }
+    .demo-text { font-size: 0.93rem; line-height: 1.75; color: #666; }
+    .demo-after .demo-text { color: #1a1a1a; font-weight: 500; }
+    .demo-arrow-col {
+      display: flex; align-items: center; justify-content: center;
+      background: #f5f3ff; color: #6c47ff; font-size: 1.1rem; font-weight: 700;
+    }
+    .demo-before { border-right: 1px solid #f0f0f0; }
+
+    /* ── How it works ── */
+    .how { padding: 100px 60px; background: #fff; }
+    .steps {
+      display: flex; justify-content: center; align-items: flex-start;
+      gap: 0; max-width: 860px; margin: 0 auto; flex-wrap: wrap;
+    }
+    .step { flex: 1; min-width: 190px; text-align: center; padding: 0 28px; position: relative; }
+    .step:not(:last-child)::after {
+      content: '→'; position: absolute; right: -4px; top: 20px;
+      color: #ddd; font-size: 1.1rem;
+    }
+    .step-num {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #6c47ff, #a78bfa);
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; font-weight: 800; color: #fff;
+      margin: 0 auto 18px; box-shadow: 0 4px 16px rgba(108,71,255,0.3);
+    }
+    .step h3 { font-size: 0.92rem; font-weight: 700; margin-bottom: 7px; color: #0d0d1a; }
+    .step p { font-size: 0.83rem; color: #777; line-height: 1.6; }
+
+    /* ── Pricing ── */
+    .pricing { background: #f8f5ff; padding: 100px 60px; }
+    .pricing-cards {
+      display: flex; justify-content: center; gap: 20px;
+      max-width: 880px; margin: 0 auto; flex-wrap: wrap; align-items: flex-start;
+    }
+    .price-card {
+      background: #fff; border: 1.5px solid #e8e8f5;
+      border-radius: 20px; padding: 34px 28px; width: 252px;
+      position: relative; transition: all 0.25s;
+    }
+    .price-card:hover { box-shadow: 0 8px 32px rgba(108,71,255,0.1); transform: translateY(-2px); }
+    .price-card.pop { border-color: #6c47ff; box-shadow: 0 4px 28px rgba(108,71,255,0.18); }
+    .pop-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: #6c47ff; color: #fff; font-size: 0.7rem; font-weight: 700;
+      padding: 4px 14px; border-radius: 20px; white-space: nowrap; letter-spacing: 0.4px;
+    }
+    .price-tier { font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #999; margin-bottom: 10px; }
+    .price-val { font-size: 2.5rem; font-weight: 900; letter-spacing: -1px; color: #0d0d1a; margin-bottom: 4px; }
+    .price-val span { font-size: 0.95rem; font-weight: 500; color: #999; letter-spacing: 0; }
+    .price-desc { font-size: 0.82rem; color: #888; margin-bottom: 22px; line-height: 1.55; }
+    .price-features { list-style: none; margin-bottom: 26px; }
+    .price-features li {
+      font-size: 0.85rem; color: #555; padding: 5px 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .price-features li::before { content: '✓'; color: #6c47ff; font-weight: 700; flex-shrink: 0; }
+    .price-btn {
+      display: block; text-align: center; padding: 12px; border-radius: 10px;
+      font-weight: 700; font-size: 0.88rem; text-decoration: none; transition: all 0.2s;
+    }
+    .price-btn-fill { background: #6c47ff; color: #fff; }
+    .price-btn-fill:hover { background: #5a38e0; }
+    .price-btn-outline { border: 1.5px solid #e0d9ff; color: #6c47ff; }
+    .price-btn-outline:hover { background: #f5f3ff; border-color: #6c47ff; }
+
+    /* ── Final CTA ── */
+    .final-cta {
+      background: linear-gradient(135deg, #5a38e0 0%, #6c47ff 50%, #8b5cf6 100%);
+      padding: 100px 60px; text-align: center; color: #fff;
+    }
+    .final-cta h2 { font-size: 2.7rem; font-weight: 900; letter-spacing: -0.8px; margin-bottom: 14px; }
+    .final-cta p { font-size: 1.05rem; opacity: 0.85; margin-bottom: 38px; max-width: 460px; margin-left: auto; margin-right: auto; line-height: 1.65; }
+    .btn-white {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #fff; color: #6c47ff; padding: 15px 36px;
+      border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.97rem;
+      transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .btn-white:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(0,0,0,0.22); }
+
+    /* ── Footer ── */
+    footer {
+      background: #0d0d1a; color: #555; padding: 44px 60px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 20px;
+    }
+    .footer-logo { font-size: 1.05rem; font-weight: 800; color: #6c47ff; }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .footer-links a { color: #555; text-decoration: none; font-size: 0.83rem; transition: color 0.15s; }
+    .footer-links a:hover { color: #999; }
+    .footer-copy { font-size: 0.8rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; }
+      .hero { flex-direction: column; padding: 60px 24px; gap: 44px; text-align: center; min-height: auto; }
+      .hero h1 { font-size: 2.3rem; }
+      .hero > .hero-text > p { max-width: 100%; }
+      .hero-actions { justify-content: center; }
+      .mockup-wrap { width: 100%; max-width: 320px; margin: 0 auto; }
+      .trust-bar { gap: 20px; padding: 24px; }
+      .pain, .features, .demo, .how, .pricing, .final-cta { padding: 64px 24px; }
+      .pain h2, .final-cta h2 { font-size: 1.9rem; }
+      .demo-compare { grid-template-columns: 1fr; }
+      .demo-arrow-col { display: none; }
+      .demo-before { border-right: none; border-bottom: 1px solid #f0f0f0; }
+      .step:not(:last-child)::after { display: none; }
+      footer { flex-direction: column; align-items: flex-start; padding: 36px 24px; }
+    }
   </style>
 </head>
 <body>
 
+<!-- Nav -->
 <nav>
-  <div class="logo">WriteMate</div>
-  <div>
-    <a href="https://zhonglin9894-source.github.io/writemate-privacy/pricing.html">Pricing</a>
-    <a href="https://chromewebstore.google.com" id="chrome-link">Add to Chrome</a>
+  <div class="logo">✦ WriteMate</div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="https://chromewebstore.google.com" id="chrome-nav-link" class="nav-cta">Add to Chrome</a>
   </div>
 </nav>
 
+<!-- Hero -->
 <section class="hero">
-  <h1>Write English Like a <span>Native Speaker</span></h1>
-  <p>WriteMate is a Chrome extension that instantly rewrites, polishes, and translates your text — so your English always sounds natural and professional.</p>
-  <a href="https://chromewebstore.google.com" class="btn" id="cta-btn">Add to Chrome – It's Free</a>
-  <p class="hint">Works on Gmail, Google Docs, LinkedIn, and any website.</p>
+  <div class="hero-text">
+    <div class="hero-badge">🌍 For ESL writers &amp; students worldwide</div>
+    <h1>Write English Like a <span class="hl">Native Speaker</span></h1>
+    <p>Stop worrying if your English sounds awkward. WriteMate instantly rewrites your text to sound natural, confident, and native — no matter your level.</p>
+    <div class="hero-actions">
+      <a href="https://chromewebstore.google.com" class="btn-primary" id="cta-btn">Add to Chrome — It's Free</a>
+      <a href="#demo" class="btn-ghost">See it in action →</a>
+    </div>
+    <p class="hero-hint">Works on Gmail, Google Docs, LinkedIn, and any website.</p>
+  </div>
+
+  <div class="hero-visual">
+    <div class="mockup-wrap">
+      <div class="mockup-glow"></div>
+      <div class="ext-popup">
+        <div class="ext-header">
+          <span class="ext-title">✦ WriteMate 👑</span>
+          <span class="ext-close">×</span>
+        </div>
+        <div class="ext-tabs">
+          <button class="ext-tab active" data-before="I want to inform you that I cannot attend the meeting because I have a schedule conflict." data-after="Just a heads-up — I won't be able to make the meeting. Something came up on my end.">Native</button>
+          <button class="ext-tab" data-before="Exercise is good for health and people who do it regularly live longer." data-after="Regular physical activity is strongly associated with reduced mortality and improved long-term health outcomes.">Academic</button>
+          <button class="ext-tab" data-before="I think we should maybe consider changing our approach to this project." data-after="I recommend we revisit our approach — there's a clear opportunity to improve outcomes.">Professional</button>
+          <button class="ext-tab" data-before="The implementation of this solution necessitates the utilization of specialized expertise." data-after="This solution requires expert help to set up.">Simplify</button>
+          <button class="ext-tab" data-before="私はこの会議に参加できません。スケジュールの都合があります。" data-after="I'm afraid I won't be able to join the meeting — I have a scheduling conflict on my end.">Translate</button>
+        </div>
+        <div class="ext-body">
+          <div class="ext-lbl">Your text</div>
+          <div class="ext-before" id="mockup-before">I want to inform you that I cannot attend the meeting because I have a schedule conflict.</div>
+          <div class="ext-arrow">↓</div>
+          <div class="ext-lbl">Native rewrite</div>
+          <div class="ext-after" id="mockup-after">Just a heads-up — I won't be able to make the meeting. Something came up on my end.</div>
+        </div>
+        <div class="ext-actions">
+          <button class="ext-btn ext-btn-p">Replace</button>
+          <button class="ext-btn ext-btn-s">Copy</button>
+          <button class="ext-btn ext-btn-s">↺ Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<section class="features">
-  <div class="feature">
-    <div class="icon">✍️</div>
-    <h3>One-Click Rewrite</h3>
-    <p>Select any text and instantly get a native-sounding rewrite. No copy-pasting between apps.</p>
-  </div>
-  <div class="feature">
-    <div class="icon">🌐</div>
-    <h3>Translate & Polish</h3>
-    <p>Write in your native language, translate to English, and polish it all in one step.</p>
-  </div>
-  <div class="feature">
-    <div class="icon">🎯</div>
-    <h3>Tone Control</h3>
-    <p>Choose formal, casual, or academic tone depending on your audience.</p>
+<!-- Trust bar -->
+<div class="trust-bar">
+  <div class="trust-item">🌍 Used in <strong>&nbsp;50+ countries</strong></div>
+  <div class="trust-item">⚡ <strong>Instant</strong>&nbsp;rewrites</div>
+  <div class="trust-item">🔒 <strong>Privacy</strong>&nbsp;first — no data stored</div>
+  <div class="trust-item">🌐 Works on&nbsp;<strong>any website</strong></div>
+</div>
+
+<!-- Pain -->
+<section class="pain">
+  <div class="sec-label">The Problem</div>
+  <h2>Your English gets the job done.<br>But it doesn't sound like you mean it.</h2>
+  <p>Grammar checkers fix your mistakes. But they can't make your English sound natural. That's what WriteMate is for.</p>
+  <div class="pain-cards">
+    <div class="pain-card">
+      <div class="pain-emoji">💼</div>
+      <h3>The ESL Professional</h3>
+      <p>Your email is grammatically correct, but it sounds stiff and translated. Colleagues can tell English isn't your first language.</p>
+    </div>
+    <div class="pain-card">
+      <div class="pain-emoji">🎓</div>
+      <h3>The International Student</h3>
+      <p>Your essay ideas are great, but the writing lacks the authority of native speakers. You want to sound scholarly, not just correct.</p>
+    </div>
+    <div class="pain-card">
+      <div class="pain-emoji">🌏</div>
+      <h3>The Global Communicator</h3>
+      <p>You write in English every day for international clients, but you're never sure if your message truly lands the way you intend.</p>
+    </div>
   </div>
 </section>
 
-<section class="how">
-  <h2>How It Works</h2>
+<!-- Features -->
+<section class="features" id="features">
+  <div class="sec-header">
+    <div class="sec-label">What WriteMate Does</div>
+    <h2>Five ways to perfect your English</h2>
+    <p>Select any text on any webpage, choose your style, and get a polished result instantly.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon">🗣️</div>
+      <h3>Native</h3>
+      <p>Rewrite your English to sound exactly like a fluent native speaker — natural phrasing, idioms, and rhythm included.</p>
+      <span class="feat-tag">⭐ Core Feature</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🎓</div>
+      <h3>Academic</h3>
+      <p>Polish essays and research papers to sound scholarly. Reduces AI-detectable phrasing. Perfect for university writing.</p>
+      <span class="feat-tag">For Students</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">💼</div>
+      <h3>Professional</h3>
+      <p>Sharpen emails, reports, and LinkedIn posts to sound confident and authoritative in any professional setting.</p>
+      <span class="feat-tag">For Work</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">✂️</div>
+      <h3>Simplify</h3>
+      <p>Cut through the complexity. Get clear, direct writing that anyone can understand at a glance.</p>
+      <span class="feat-tag">Clear &amp; Direct</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🌐</div>
+      <h3>Translate</h3>
+      <p>Write in your native language, get native-quality English output. Not just a translation — a real rewrite.</p>
+      <span class="feat-tag">20+ Languages</span>
+    </div>
+  </div>
+</section>
+
+<!-- Demo -->
+<section class="demo" id="demo">
+  <div class="sec-header">
+    <div class="sec-label">See the Difference</div>
+    <h2>Before and After WriteMate</h2>
+    <p>Real examples of how WriteMate transforms everyday English.</p>
+  </div>
+  <div class="demo-tabs">
+    <button class="demo-tab-btn active" onclick="showDemo('email',this)">Work Email</button>
+    <button class="demo-tab-btn" onclick="showDemo('essay',this)">Academic Essay</button>
+    <button class="demo-tab-btn" onclick="showDemo('linkedin',this)">LinkedIn Post</button>
+  </div>
+  <div class="demo-content">
+    <div class="demo-panel active" id="demo-email">
+      <div class="demo-compare">
+        <div class="demo-side demo-before">
+          <div class="demo-side-lbl">⚠ Before WriteMate</div>
+          <div class="demo-text">Dear Mr. Johnson, I want to inform you that I cannot attend the meeting which is scheduled for tomorrow because I have a schedule conflict. I am sorry for this inconvenience. Can we reschedule to next week?</div>
+        </div>
+        <div class="demo-arrow-col">→</div>
+        <div class="demo-side demo-after">
+          <div class="demo-side-lbl">✦ After WriteMate (Native)</div>
+          <div class="demo-text">Hi David, something's come up and I won't be able to make tomorrow's meeting — sorry for the short notice. Any chance we could push it to next week? Happy to work around your schedule.</div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-panel" id="demo-essay">
+      <div class="demo-compare">
+        <div class="demo-side demo-before">
+          <div class="demo-side-lbl">⚠ Before WriteMate</div>
+          <div class="demo-text">Many studies show that using social media a lot is bad for mental health of teenagers. They spend too much time on it and this makes them feel sad and lonely. This is a big problem in today's society.</div>
+        </div>
+        <div class="demo-arrow-col">→</div>
+        <div class="demo-side demo-after">
+          <div class="demo-side-lbl">✦ After WriteMate (Academic)</div>
+          <div class="demo-text">Extensive research indicates a significant correlation between excessive social media use and deteriorating mental health outcomes in adolescents. Prolonged screen engagement has been associated with heightened levels of depression and social isolation — a phenomenon of growing concern in contemporary discourse.</div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-panel" id="demo-linkedin">
+      <div class="demo-compare">
+        <div class="demo-side demo-before">
+          <div class="demo-side-lbl">⚠ Before WriteMate</div>
+          <div class="demo-text">I am very happy to share that I finished my MBA program. It was very hard and I learned many things. I want to thank my teachers and classmates for their help. Now I am looking for job opportunities.</div>
+        </div>
+        <div class="demo-arrow-col">→</div>
+        <div class="demo-side demo-after">
+          <div class="demo-side-lbl">✦ After WriteMate (Professional)</div>
+          <div class="demo-text">Thrilled to share that I've completed my MBA — an incredibly challenging and rewarding journey. Huge thanks to my professors and cohort for the growth along the way. Now excited to bring these skills to new opportunities. Open to connecting! 🎓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="how" id="how">
+  <div class="sec-header">
+    <div class="sec-label">Getting Started</div>
+    <h2>Three steps to better English</h2>
+  </div>
   <div class="steps">
     <div class="step">
-      <div class="num">1</div>
-      <p>Install the Chrome extension from the Web Store</p>
+      <div class="step-num">1</div>
+      <h3>Install the Extension</h3>
+      <p>Add WriteMate to Chrome in one click. Free to start — no account required.</p>
     </div>
     <div class="step">
-      <div class="num">2</div>
-      <p>Select any text on any webpage</p>
+      <div class="step-num">2</div>
+      <h3>Select Your Text</h3>
+      <p>Highlight any text on any webpage — emails, documents, social posts, anything.</p>
     </div>
     <div class="step">
-      <div class="num">3</div>
-      <p>Click WriteMate and get a polished result instantly</p>
+      <div class="step-num">3</div>
+      <h3>Choose Your Style</h3>
+      <p>Pick Native, Academic, Professional, Simplify, or Translate. Get your result instantly.</p>
     </div>
   </div>
 </section>
 
-<section class="cta">
-  <h2>Start Writing Like a Native Today</h2>
-  <p>Join thousands of professionals and students worldwide.</p>
-  <a href="https://zhonglin9894-source.github.io/writemate-privacy/pricing.html" class="btn-white">View Pricing</a>
+<!-- Pricing -->
+<section class="pricing" id="pricing">
+  <div class="sec-header">
+    <div class="sec-label">Pricing</div>
+    <h2>Simple, affordable pricing</h2>
+    <p>Start free. Upgrade when you're ready.</p>
+  </div>
+  <div class="pricing-cards">
+    <div class="price-card">
+      <div class="price-tier">Free</div>
+      <div class="price-val">$0</div>
+      <div class="price-desc">Try WriteMate risk-free. No credit card needed.</div>
+      <ul class="price-features">
+        <li>5 rewrites per day</li>
+        <li>Native &amp; Simplify modes</li>
+        <li>Works on all websites</li>
+      </ul>
+      <a href="https://chromewebstore.google.com" class="price-btn price-btn-outline" id="free-cta">Add to Chrome</a>
+    </div>
+    <div class="price-card pop">
+      <div class="pop-badge">✦ Most Popular</div>
+      <div class="price-tier">Pro</div>
+      <div class="price-val">$9<span>/mo</span></div>
+      <div class="price-desc">For professionals and students who write in English daily.</div>
+      <ul class="price-features">
+        <li>Unlimited rewrites</li>
+        <li>All 5 modes (incl. Academic)</li>
+        <li>Translate from 20+ languages</li>
+        <li>Priority processing</li>
+      </ul>
+      <a href="https://zhonglin9894-source.github.io/writemate-privacy/pricing.html" class="price-btn price-btn-fill" id="pro-cta">Get Pro</a>
+    </div>
+    <div class="price-card">
+      <div class="price-tier">Annual</div>
+      <div class="price-val">$79<span>/yr</span></div>
+      <div class="price-desc">Best value — save $29 vs. monthly billing.</div>
+      <ul class="price-features">
+        <li>Everything in Pro</li>
+        <li>Save 27% vs monthly</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="https://zhonglin9894-source.github.io/writemate-privacy/pricing.html" class="price-btn price-btn-outline">Get Annual</a>
+    </div>
+  </div>
 </section>
 
+<!-- Final CTA -->
+<section class="final-cta">
+  <h2>Start Writing Like a Native Today</h2>
+  <p>Join writers from India, Japan, Korea, Southeast Asia, and beyond who use WriteMate every day.</p>
+  <a href="https://chromewebstore.google.com" class="btn-white" id="final-btn">Add to Chrome — It's Free</a>
+</section>
+
+<!-- Footer -->
 <footer>
-  <p>© 2026 WriteMate. All rights reserved.</p>
-  <div style="margin-top:10px;">
+  <div class="footer-logo">✦ WriteMate</div>
+  <div class="footer-links">
     <a href="https://zhonglin9894-source.github.io/writemate-privacy/pricing.html">Pricing</a>
     <a href="https://zhonglin9894-source.github.io/writemate-privacy/terms.html">Terms</a>
     <a href="https://zhonglin9894-source.github.io/writemate-privacy/">Privacy</a>
     <a href="https://zhonglin9894-source.github.io/writemate-privacy/refund.html">Refund</a>
   </div>
+  <div class="footer-copy">© 2026 WriteMate. All rights reserved.</div>
 </footer>
+
+<script>
+  function showDemo(type, btn) {
+    document.querySelectorAll('.demo-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.demo-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('demo-' + type).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  document.querySelectorAll('.ext-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.ext-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById('mockup-before').textContent = this.dataset.before;
+      document.getElementById('mockup-after').textContent = this.dataset.after;
+    });
+  });
+</script>
 
 </body>
 </html>
