@@ -1,0 +1,11 @@
+{
+  "rewrites": [
+    { "source": "/rewrite", "destination": "https://cn.writemate.top/rewrite" },
+    { "source": "/verify", "destination": "https://cn.writemate.top/verify" },
+    { "source": "/activate", "destination": "https://cn.writemate.top/activate" },
+    { "source": "/create_order", "destination": "https://cn.writemate.top/create_order" },
+    { "source": "/notify", "destination": "https://cn.writemate.top/notify" },
+    { "source": "/license", "destination": "https://cn.writemate.top/license" },
+    { "source": "/health", "destination": "https://cn.writemate.top/health" }
+  ]
+}
