@@ -338,7 +338,7 @@
 
     /* ── Footer ── */
     footer {
-      background: #f0f6ff; color: #8bacc8; padding: 40px 60px;
+      background: #dbeafe; color: #6a8fb5; padding: 40px 60px;
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 20px; border-top: 1px solid #dbeafe;
     }
@@ -722,24 +722,35 @@
   highlightStep();
   setInterval(highlightStep, 1600);
 
-  /* ── Ext-popup mockup auto-cycle ── */
+  /* ── Ext-popup mockup auto-cycle with typewriter ── */
   const extTabs = Array.from(document.querySelectorAll('.ext-tab'));
   const mockBefore = document.getElementById('mockup-before');
   const mockAfter = document.getElementById('mockup-after');
   let autoIdx = 0;
   let autoTimer;
+  let typingTimer = null;
 
   function activateTab(tab) {
     extTabs.forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
+    if (typingTimer) { clearInterval(typingTimer); typingTimer = null; }
+    const beforeText = tab.dataset.before;
+    const afterText = tab.dataset.after;
     mockBefore.style.opacity = '0';
     mockAfter.style.opacity = '0';
+    mockAfter.textContent = '';
     setTimeout(() => {
-      mockBefore.textContent = tab.dataset.before;
-      mockAfter.textContent = tab.dataset.after;
+      mockBefore.textContent = beforeText;
       mockBefore.style.opacity = '1';
+      let i = 0;
       mockAfter.style.opacity = '1';
-    }, 280);
+      const speed = Math.max(18, Math.min(38, 1800 / afterText.length));
+      typingTimer = setInterval(() => {
+        i++;
+        mockAfter.textContent = afterText.slice(0, i);
+        if (i >= afterText.length) { clearInterval(typingTimer); typingTimer = null; }
+      }, speed);
+    }, 350);
   }
 
   extTabs.forEach(tab => tab.addEventListener('click', function() { activateTab(this); }));
@@ -749,10 +760,10 @@
     activateTab(extTabs[autoIdx]);
   }
 
-  autoTimer = setInterval(cycleTab, 3200);
+  autoTimer = setInterval(cycleTab, 4200);
   const popup = document.querySelector('.ext-popup');
   popup.addEventListener('mouseenter', () => clearInterval(autoTimer));
-  popup.addEventListener('mouseleave', () => { autoTimer = setInterval(cycleTab, 3200); });
+  popup.addEventListener('mouseleave', () => { autoTimer = setInterval(cycleTab, 4200); });
 </script>
 
 </body>
