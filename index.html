@@ -292,30 +292,61 @@
 
     /* ── Final CTA ── */
     .final-cta {
-      background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #3b82f6 100%);
-      padding: 100px 60px; text-align: center; color: #fff;
+      position: relative; background: #060f23;
+      padding: 120px 60px; text-align: center; color: #fff; overflow: hidden;
     }
-    .final-cta h2 { font-size: 2.7rem; font-weight: 900; letter-spacing: -0.8px; margin-bottom: 14px; }
-    .final-cta p { font-size: 1.05rem; opacity: 0.85; margin-bottom: 38px; max-width: 460px; margin-left: auto; margin-right: auto; line-height: 1.65; }
+    .final-cta::before {
+      content: ''; position: absolute; width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(59,130,246,0.22) 0%, transparent 65%);
+      top: -380px; left: -180px; pointer-events: none;
+      animation: ctaOrb1 12s ease-in-out infinite;
+    }
+    .final-cta::after {
+      content: ''; position: absolute; width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(147,197,253,0.14) 0%, transparent 65%);
+      bottom: -320px; right: -150px; pointer-events: none;
+      animation: ctaOrb2 15s ease-in-out infinite;
+    }
+    @keyframes ctaOrb1 {
+      0%,100%{transform:translate(0,0) scale(1)}
+      33%{transform:translate(120px,70px) scale(1.1)}
+      66%{transform:translate(50px,-50px) scale(0.92)}
+    }
+    @keyframes ctaOrb2 {
+      0%,100%{transform:translate(0,0) scale(1)}
+      33%{transform:translate(-90px,-60px) scale(1.08)}
+      66%{transform:translate(-30px,50px) scale(0.9)}
+    }
+    .cta-inner { position: relative; z-index: 1; }
+    .cta-badge {
+      display: inline-block; background: rgba(59,130,246,0.15);
+      border: 1px solid rgba(59,130,246,0.28); color: #93c5fd;
+      font-size: 0.76rem; font-weight: 600; letter-spacing: 0.5px;
+      padding: 6px 16px; border-radius: 20px; margin-bottom: 28px;
+    }
+    .final-cta h2 { font-size: 2.8rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 16px; line-height: 1.1; }
+    .final-cta .cta-inner p { font-size: 1.05rem; color: #7aadda; margin-bottom: 40px; max-width: 440px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .cta-sub { margin-top: 16px; font-size: 0.8rem; color: #2d4a66; }
     .btn-white {
       display: inline-flex; align-items: center; gap: 8px;
-      background: #fff; color: #3b82f6; padding: 15px 36px;
+      background: #fff; color: #1e40af; padding: 15px 36px;
       border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.97rem;
-      transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      transition: all 0.2s; box-shadow: 0 4px 24px rgba(0,0,0,0.2);
     }
-    .btn-white:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(0,0,0,0.22); }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.28); }
 
     /* ── Footer ── */
     footer {
-      background: #0d0d1a; color: #555; padding: 44px 60px;
+      background: #060f23; color: #2d4a66; padding: 44px 60px;
       display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 20px;
+      flex-wrap: wrap; gap: 20px; border-top: 1px solid rgba(59,130,246,0.08);
     }
     .footer-logo { font-size: 1.05rem; font-weight: 800; color: #3b82f6; }
     .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
-    .footer-links a { color: #555; text-decoration: none; font-size: 0.83rem; transition: color 0.15s; }
-    .footer-links a:hover { color: #999; }
+    .footer-links a { color: #2d4a66; text-decoration: none; font-size: 0.83rem; transition: color 0.15s; }
+    .footer-links a:hover { color: #7aadda; }
     .footer-copy { font-size: 0.8rem; }
+    #mockup-before, #mockup-after { transition: opacity 0.28s ease; }
 
     /* ── Responsive ── */
     @media (max-width: 900px) {
@@ -594,9 +625,13 @@
 
 <!-- Final CTA -->
 <section class="final-cta">
-  <h2>Start Writing Like a Native Today</h2>
-  <p>Join writers from India, Japan, Korea, Southeast Asia, and beyond who use WriteMate every day.</p>
-  <a href="https://chromewebstore.google.com" class="btn-white" id="final-btn">Add to Chrome — It's Free</a>
+  <div class="cta-inner">
+    <div class="cta-badge">✦ Free to get started</div>
+    <h2>Start Writing Like a<br>Native Speaker Today</h2>
+    <p>Join writers from India, Japan, Korea, Southeast Asia, and beyond who use WriteMate every day.</p>
+    <a href="https://chromewebstore.google.com" class="btn-white" id="final-btn">Add to Chrome — It's Free</a>
+    <p class="cta-sub">No credit card required · Free plan included</p>
+  </div>
 </section>
 
 <!-- Footer -->
@@ -619,14 +654,36 @@
     btn.classList.add('active');
   }
 
-  document.querySelectorAll('.ext-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      document.querySelectorAll('.ext-tab').forEach(t => t.classList.remove('active'));
-      this.classList.add('active');
-      document.getElementById('mockup-before').textContent = this.dataset.before;
-      document.getElementById('mockup-after').textContent = this.dataset.after;
-    });
-  });
+  const extTabs = Array.from(document.querySelectorAll('.ext-tab'));
+  const mockBefore = document.getElementById('mockup-before');
+  const mockAfter = document.getElementById('mockup-after');
+  let autoIdx = 0;
+  let autoTimer;
+
+  function activateTab(tab) {
+    extTabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    mockBefore.style.opacity = '0';
+    mockAfter.style.opacity = '0';
+    setTimeout(() => {
+      mockBefore.textContent = tab.dataset.before;
+      mockAfter.textContent = tab.dataset.after;
+      mockBefore.style.opacity = '1';
+      mockAfter.style.opacity = '1';
+    }, 280);
+  }
+
+  extTabs.forEach(tab => tab.addEventListener('click', function() { activateTab(this); }));
+
+  function cycleTab() {
+    autoIdx = (autoIdx + 1) % extTabs.length;
+    activateTab(extTabs[autoIdx]);
+  }
+
+  autoTimer = setInterval(cycleTab, 3200);
+  const popup = document.querySelector('.ext-popup');
+  popup.addEventListener('mouseenter', () => clearInterval(autoTimer));
+  popup.addEventListener('mouseleave', () => { autoTimer = setInterval(cycleTab, 3200); });
 </script>
 
 </body>
