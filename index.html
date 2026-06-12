@@ -483,17 +483,17 @@
           <span class="ext-close">×</span>
         </div>
         <div class="ext-tabs">
-          <button class="ext-tab active" data-before="I want to inform you that I cannot attend the meeting because I have a schedule conflict." data-after="Just a heads-up — I won't be able to make the meeting. Something came up on my end.">Native</button>
-          <button class="ext-tab" data-before="Exercise is good for health and people who do it regularly live longer." data-after="Regular physical activity is strongly associated with reduced mortality and improved long-term health outcomes.">Academic</button>
-          <button class="ext-tab" data-before="I think we should maybe consider changing our approach to this project." data-after="I recommend we revisit our approach — there's a clear opportunity to improve outcomes.">Pro</button>
-          <button class="ext-tab" data-before="The implementation of this solution necessitates the utilization of specialized expertise." data-after="This solution requires expert help to set up.">Simplify</button>
-          <button class="ext-tab" data-before="私はこの会議に参加できません。スケジュールの都合があります。" data-after="I'm afraid I won't be able to join the meeting — I have a scheduling conflict on my end.">Translate</button>
+          <button class="ext-tab active" data-label="Native rewrite" data-before="I want to inform you that I cannot attend the meeting because I have a schedule conflict." data-after="Just a heads-up — I won't be able to make the meeting. Something came up on my end.">Native</button>
+          <button class="ext-tab" data-label="Academic polish" data-before="Exercise is good for health and people who do it regularly live longer." data-after="Regular physical activity is strongly associated with reduced mortality and improved long-term health outcomes.">Academic</button>
+          <button class="ext-tab" data-label="Professional tone" data-before="I think we should maybe consider changing our approach to this project." data-after="I recommend we revisit our approach — there's a clear opportunity to improve outcomes.">Pro</button>
+          <button class="ext-tab" data-label="Simplified version" data-before="The implementation of this solution necessitates the utilization of specialized expertise." data-after="This solution requires expert help to set up.">Simplify</button>
+          <button class="ext-tab" data-label="Translated to English 🇯🇵→🇬🇧" data-before="私はこの会議に参加できません。スケジュールの都合があります。" data-after="I'm afraid I won't be able to join the meeting — I have a scheduling conflict on my end.">Translate</button>
         </div>
         <div class="ext-body">
           <div class="ext-lbl">Your text</div>
           <div class="ext-before" id="mockup-before">I want to inform you that I cannot attend the meeting because I have a schedule conflict.</div>
           <div class="ext-arrow">↓</div>
-          <div class="ext-lbl">Native rewrite</div>
+          <div class="ext-lbl" id="mockup-after-lbl">Native rewrite</div>
           <div class="ext-after" id="mockup-after">Just a heads-up — I won't be able to make the meeting. Something came up on my end.</div>
         </div>
         <div class="ext-actions">
@@ -573,8 +573,8 @@
     <div class="feat-card">
       <div class="feat-icon">🌐</div>
       <h3>Translate</h3>
-      <p>Write in your native language, get native-quality English output. Not just a translation — a real rewrite.</p>
-      <span class="feat-tag">20+ Languages</span>
+      <p>Translate in any direction — turn your native language into fluent English, or convert English into 20+ languages. Powered by Gemini AI.</p>
+      <span class="feat-tag">20+ Languages · Both Ways</span>
     </div>
   </div>
 </section>
@@ -686,7 +686,7 @@
       <ul class="price-features">
         <li>Unlimited rewrites</li>
         <li>All 5 modes (incl. Academic)</li>
-        <li>Translate from 20+ languages</li>
+        <li>Translate between 20+ languages</li>
         <li>Priority processing</li>
       </ul>
       <a href="https://zhonglin9894-source.github.io/writemate-privacy/pricing.html" class="price-btn price-btn-fill" id="pro-cta">Get Pro</a>
@@ -801,6 +801,7 @@
   const extTabs = Array.from(document.querySelectorAll('.ext-tab'));
   const mockBefore = document.getElementById('mockup-before');
   const mockAfter = document.getElementById('mockup-after');
+  const mockAfterLbl = document.getElementById('mockup-after-lbl');
   let autoIdx = 0;
   let autoTimer;
   let typingTimer = null;
@@ -811,6 +812,7 @@
     if (typingTimer) { clearInterval(typingTimer); typingTimer = null; }
     const beforeText = tab.dataset.before;
     const afterText = tab.dataset.after;
+    if (mockAfterLbl && tab.dataset.label) mockAfterLbl.textContent = tab.dataset.label;
     mockBefore.style.opacity = '0';
     mockAfter.style.opacity = '0';
     mockAfter.textContent = '';
