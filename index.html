@@ -1117,6 +1117,7 @@
     activateTab(extTabs[autoIdx]);
   }
 
+  activateTab(extTabs[0]);
   autoTimer = setInterval(cycleTab, 8500);
   const popup = document.querySelector('.ext-popup');
   popup.addEventListener('mouseenter', () => { heroPaused = true; clearInterval(autoTimer); });
