@@ -204,8 +204,11 @@
     .ext-diff-static {
       background: none; border: 1px solid #bfdbfe; border-radius: 20px;
       color: #3b82f6; font-size: 0.68rem; padding: 3px 10px;
-      font-family: inherit; font-weight: 500; cursor: default; display: inline-block;
+      font-family: inherit; font-weight: 500; cursor: pointer; display: inline-block;
+      transition: all 0.2s;
     }
+    .ext-diff-static:hover { background: #eff6ff; }
+    .ext-diff-static.active { background: #eff6ff; border-color: #3b82f6; }
 
     /* ── Changes Showcase ── */
     .changes-showcase {
@@ -461,7 +464,7 @@
     .footer-links a { color: #8bacc8; text-decoration: none; font-size: 0.83rem; transition: color 0.15s; }
     .footer-links a:hover { color: #3b82f6; }
     .footer-copy { font-size: 0.8rem; }
-    #mockup-before, #mockup-after { transition: opacity 0.28s ease; }
+    #mockup-before, #mockup-after { transition: opacity 0.18s ease; }
 
     /* ── Steps active highlight ── */
     .step { transition: transform 0.35s ease; }
@@ -610,7 +613,7 @@
           <div class="ext-lbl" id="mockup-after-lbl">Native rewrite</div>
           <div class="ext-after" id="mockup-after">Just a heads-up — I won't be able to make the meeting. Something came up on my end.</div>
           <div class="ext-diff-row" id="ext-diff-row">
-            <span class="ext-diff-static" id="ext-diff-static">✨ 5 changes · see diff ▾</span>
+            <button class="ext-diff-static" id="ext-diff-static">✨ 5 changes · see diff ▾</button>
           </div>
         </div>
         <div class="ext-actions">
@@ -981,12 +984,15 @@
   let autoIdx = 0;
   let autoTimer;
   let typingTimer = null;
+  let isDiffShowing = false;
 
   function activateTab(tab) {
     extTabs.forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     if (typingTimer) { clearInterval(typingTimer); typingTimer = null; }
     if (extDiffRow) extDiffRow.classList.remove('visible');
+    isDiffShowing = false;
+    if (extDiffStatic) { extDiffStatic.classList.remove('active'); }
     const beforeText = tab.dataset.before;
     const afterText = tab.dataset.after;
     const changes = parseInt(tab.dataset.changes || '0');
@@ -1015,6 +1021,43 @@
   }
 
   extTabs.forEach(tab => tab.addEventListener('click', function() { activateTab(this); }));
+
+  const diffTexts = [
+    `<mark class="dm-del">I want to inform you that I cannot attend</mark><mark class="dm-ins">Just a heads-up — I won't be able to make</mark> the meeting. <mark class="dm-del">Because I have a schedule conflict.</mark><mark class="dm-ins">Something came up on my end.</mark>`,
+    `<mark class="dm-del">Exercise is good for</mark><mark class="dm-ins">Regular physical activity is strongly associated with reduced mortality and improved long-term</mark> health<mark class="dm-del"> and people who do it regularly live longer.</mark><mark class="dm-ins"> outcomes.</mark>`,
+    `<mark class="dm-del">I think</mark><mark class="dm-ins">I recommend</mark> we <mark class="dm-del">should maybe consider changing</mark><mark class="dm-ins">revisit</mark> our approach<mark class="dm-del"> to this project.</mark><mark class="dm-ins"> — there's a clear opportunity to improve outcomes.</mark>`,
+    `<mark class="dm-del">The implementation of this</mark><mark class="dm-ins">This</mark> solution <mark class="dm-del">necessitates the utilization of specialized expertise.</mark><mark class="dm-ins">requires expert help to set up.</mark>`,
+    null
+  ];
+
+  if (extDiffStatic) {
+    extDiffStatic.addEventListener('click', () => {
+      if (typingTimer) return;
+      const activeTab = extTabs.find(t => t.classList.contains('active'));
+      const tabIdx = extTabs.indexOf(activeTab);
+      const diff = diffTexts[tabIdx];
+      if (!diff) return;
+      if (!isDiffShowing) {
+        mockAfter.style.opacity = '0';
+        setTimeout(() => {
+          mockAfter.innerHTML = diff;
+          mockAfter.style.opacity = '1';
+        }, 180);
+        extDiffStatic.textContent = `✨ ${activeTab.dataset.changes} changes · hide diff ▴`;
+        extDiffStatic.classList.add('active');
+        isDiffShowing = true;
+      } else {
+        mockAfter.style.opacity = '0';
+        setTimeout(() => {
+          mockAfter.textContent = activeTab.dataset.after;
+          mockAfter.style.opacity = '1';
+        }, 180);
+        extDiffStatic.textContent = `✨ ${activeTab.dataset.changes} changes · see diff ▾`;
+        extDiffStatic.classList.remove('active');
+        isDiffShowing = false;
+      }
+    });
+  }
 
   function cycleTab() {
     autoIdx = (autoIdx + 1) % extTabs.length;
