@@ -209,6 +209,14 @@
     }
     .ext-diff-static:hover { background: #eff6ff; }
     .ext-diff-static.active { background: #eff6ff; border-color: #3b82f6; }
+    .ext-diff-static, .dmp-diff-toggle { position: relative; overflow: hidden; }
+    .btn-ripple {
+      position: absolute; top: 50%; left: 50%; pointer-events: none;
+      width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%;
+      background: rgba(59,130,246,0.38);
+      animation: btn-ripple-anim 0.65s ease-out forwards;
+    }
+    @keyframes btn-ripple-anim { to { transform: scale(25); opacity: 0; } }
 
     /* ── Changes Showcase ── */
     .changes-showcase {
@@ -975,52 +983,25 @@
   setInterval(highlightStep, 1600);
 
   /* ── Ext-popup mockup auto-cycle with typewriter ── */
-  const extTabs = Array.from(document.querySelectorAll('.ext-tab'));
-  const mockBefore = document.getElementById('mockup-before');
-  const mockAfter = document.getElementById('mockup-after');
+  const extTabs      = Array.from(document.querySelectorAll('.ext-tab'));
+  const mockBefore   = document.getElementById('mockup-before');
+  const mockAfter    = document.getElementById('mockup-after');
   const mockAfterLbl = document.getElementById('mockup-after-lbl');
-  const extDiffRow = document.getElementById('ext-diff-row');
+  const extDiffRow   = document.getElementById('ext-diff-row');
   const extDiffStatic = document.getElementById('ext-diff-static');
   let autoIdx = 0;
   let autoTimer;
-  let typingTimer = null;
+  let typingTimer   = null;
   let isDiffShowing = false;
+  let heroToken     = 0;
+  let heroPaused    = false;
 
-  function activateTab(tab) {
-    extTabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    if (typingTimer) { clearInterval(typingTimer); typingTimer = null; }
-    if (extDiffRow) extDiffRow.classList.remove('visible');
-    isDiffShowing = false;
-    if (extDiffStatic) { extDiffStatic.classList.remove('active'); }
-    const beforeText = tab.dataset.before;
-    const afterText = tab.dataset.after;
-    const changes = parseInt(tab.dataset.changes || '0');
-    if (mockAfterLbl && tab.dataset.label) mockAfterLbl.textContent = tab.dataset.label;
-    mockBefore.style.opacity = '0';
-    mockAfter.style.opacity = '0';
-    mockAfter.textContent = '';
-    setTimeout(() => {
-      mockBefore.textContent = beforeText;
-      mockBefore.style.opacity = '1';
-      let i = 0;
-      mockAfter.style.opacity = '1';
-      const speed = Math.max(18, Math.min(38, 1800 / afterText.length));
-      typingTimer = setInterval(() => {
-        i++;
-        mockAfter.textContent = afterText.slice(0, i);
-        if (i >= afterText.length) {
-          clearInterval(typingTimer); typingTimer = null;
-          if (changes > 0 && extDiffRow && extDiffStatic) {
-            extDiffStatic.textContent = `✨ ${changes} changes · see diff ▾`;
-            extDiffRow.classList.add('visible');
-          }
-        }
-      }, speed);
-    }, 350);
+  function triggerRipple(btn) {
+    const r = document.createElement('span');
+    r.className = 'btn-ripple';
+    btn.appendChild(r);
+    setTimeout(() => { if (r.parentNode) r.remove(); }, 700);
   }
-
-  extTabs.forEach(tab => tab.addEventListener('click', function() { activateTab(this); }));
 
   const diffTexts = [
     `<mark class="dm-del">I want to inform you that I cannot attend</mark><mark class="dm-ins">Just a heads-up — I won't be able to make</mark> the meeting. <mark class="dm-del">Because I have a schedule conflict.</mark><mark class="dm-ins">Something came up on my end.</mark>`,
@@ -1030,28 +1011,100 @@
     null
   ];
 
+  function activateTab(tab) {
+    const token = ++heroToken;
+    extTabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    if (typingTimer) { clearInterval(typingTimer); typingTimer = null; }
+    if (extDiffRow) extDiffRow.classList.remove('visible');
+    isDiffShowing = false;
+    if (extDiffStatic) extDiffStatic.classList.remove('active');
+
+    const beforeText = tab.dataset.before;
+    const afterText  = tab.dataset.after;
+    const changes    = parseInt(tab.dataset.changes || '0');
+    const tabIdx     = extTabs.indexOf(tab);
+    if (mockAfterLbl && tab.dataset.label) mockAfterLbl.textContent = tab.dataset.label;
+    mockBefore.style.opacity = '0';
+    mockAfter.style.opacity  = '0';
+    mockAfter.textContent    = '';
+
+    setTimeout(() => {
+      if (heroToken !== token) return;
+      mockBefore.textContent   = beforeText;
+      mockBefore.style.opacity = '1';
+      let i = 0;
+      mockAfter.style.opacity = '1';
+      const speed = Math.max(18, Math.min(38, 1800 / afterText.length));
+      typingTimer = setInterval(() => {
+        if (heroToken !== token) { clearInterval(typingTimer); typingTimer = null; return; }
+        i++;
+        mockAfter.textContent = afterText.slice(0, i);
+        if (i >= afterText.length) {
+          clearInterval(typingTimer); typingTimer = null;
+          if (changes > 0 && extDiffRow && extDiffStatic) {
+            extDiffStatic.textContent = `✨ ${changes} changes · see diff ▾`;
+            extDiffRow.classList.add('visible');
+            // auto-demo ①: ripple → show diff (1s after typing done)
+            setTimeout(() => {
+              if (heroToken !== token || heroPaused) return;
+              triggerRipple(extDiffStatic);
+              setTimeout(() => {
+                if (heroToken !== token || heroPaused) return;
+                mockAfter.style.opacity = '0';
+                setTimeout(() => {
+                  if (heroToken !== token) return;
+                  mockAfter.innerHTML = diffTexts[tabIdx];
+                  mockAfter.style.opacity = '1';
+                }, 180);
+                extDiffStatic.textContent = `✨ ${changes} changes · hide diff ▴`;
+                extDiffStatic.classList.add('active');
+                isDiffShowing = true;
+              }, 350);
+            }, 1000);
+            // auto-demo ②: ripple → hide diff (1s + 350ms + 3s = 4350ms after typing done)
+            setTimeout(() => {
+              if (heroToken !== token || heroPaused) return;
+              triggerRipple(extDiffStatic);
+              setTimeout(() => {
+                if (heroToken !== token || heroPaused) return;
+                mockAfter.style.opacity = '0';
+                setTimeout(() => {
+                  if (heroToken !== token) return;
+                  mockAfter.textContent = afterText;
+                  mockAfter.style.opacity = '1';
+                }, 180);
+                extDiffStatic.textContent = `✨ ${changes} changes · see diff ▾`;
+                extDiffStatic.classList.remove('active');
+                isDiffShowing = false;
+              }, 350);
+            }, 4350);
+          }
+        }
+      }, speed);
+    }, 350);
+  }
+
+  extTabs.forEach(tab => tab.addEventListener('click', function() { activateTab(this); }));
+
   if (extDiffStatic) {
     extDiffStatic.addEventListener('click', () => {
       if (typingTimer) return;
       const activeTab = extTabs.find(t => t.classList.contains('active'));
-      const tabIdx = extTabs.indexOf(activeTab);
-      const diff = diffTexts[tabIdx];
+      const tabIdx    = extTabs.indexOf(activeTab);
+      const diff      = diffTexts[tabIdx];
       if (!diff) return;
       if (!isDiffShowing) {
+        triggerRipple(extDiffStatic);
         mockAfter.style.opacity = '0';
-        setTimeout(() => {
-          mockAfter.innerHTML = diff;
-          mockAfter.style.opacity = '1';
-        }, 180);
+        setTimeout(() => { mockAfter.innerHTML = diff; mockAfter.style.opacity = '1'; }, 180);
         extDiffStatic.textContent = `✨ ${activeTab.dataset.changes} changes · hide diff ▴`;
         extDiffStatic.classList.add('active');
         isDiffShowing = true;
       } else {
+        triggerRipple(extDiffStatic);
         mockAfter.style.opacity = '0';
-        setTimeout(() => {
-          mockAfter.textContent = activeTab.dataset.after;
-          mockAfter.style.opacity = '1';
-        }, 180);
+        setTimeout(() => { mockAfter.textContent = activeTab.dataset.after; mockAfter.style.opacity = '1'; }, 180);
         extDiffStatic.textContent = `✨ ${activeTab.dataset.changes} changes · see diff ▾`;
         extDiffStatic.classList.remove('active');
         isDiffShowing = false;
@@ -1064,10 +1117,10 @@
     activateTab(extTabs[autoIdx]);
   }
 
-  autoTimer = setInterval(cycleTab, 4200);
+  autoTimer = setInterval(cycleTab, 8500);
   const popup = document.querySelector('.ext-popup');
-  popup.addEventListener('mouseenter', () => clearInterval(autoTimer));
-  popup.addEventListener('mouseleave', () => { autoTimer = setInterval(cycleTab, 4200); });
+  popup.addEventListener('mouseenter', () => { heroPaused = true; clearInterval(autoTimer); });
+  popup.addEventListener('mouseleave', () => { heroPaused = false; autoTimer = setInterval(cycleTab, 8500); });
 
   /* ── Diff showcase animation ── */
   const dmpResult = document.getElementById('dmp-result');
@@ -1086,7 +1139,8 @@
         dmpPhase = 1;
         setTimeout(stepDmp, 2800);
       } else if (dmpPhase === 1) {
-        // pulse button to attract attention
+        // simulate click with ripple
+        triggerRipple(dmpToggle);
         dmpToggle.classList.add('pulsing');
         dmpPhase = 2;
         setTimeout(stepDmp, 700);
@@ -1103,7 +1157,8 @@
         dmpPhase = 3;
         setTimeout(stepDmp, 3200);
       } else {
-        // fade back to clean
+        // simulate click to hide diff
+        triggerRipple(dmpToggle);
         dmpResult.style.opacity = '0';
         setTimeout(() => {
           dmpResult.textContent = cleanText;
