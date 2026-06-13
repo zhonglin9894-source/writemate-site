@@ -198,6 +198,120 @@
       color: #3b82f6; background: #eff6ff; padding: 3px 10px; border-radius: 20px;
     }
 
+    /* ── Hero diff button ── */
+    .ext-diff-row { padding: 2px 18px 8px; opacity: 0; transition: opacity 0.4s; }
+    .ext-diff-row.visible { opacity: 1; }
+    .ext-diff-static {
+      background: none; border: 1px solid #bfdbfe; border-radius: 20px;
+      color: #3b82f6; font-size: 0.68rem; padding: 3px 10px;
+      font-family: inherit; font-weight: 500; cursor: default; display: inline-block;
+    }
+
+    /* ── Changes Showcase ── */
+    .changes-showcase {
+      padding: 100px 60px;
+      background: linear-gradient(160deg, #fafcff 0%, #eff6ff 50%, #fafcff 100%);
+      overflow: hidden;
+    }
+    .changes-inner {
+      display: flex; align-items: center; justify-content: center;
+      gap: 80px; max-width: 1100px; margin: 0 auto;
+    }
+    .changes-text { max-width: 460px; flex-shrink: 0; }
+    .changes-text h2 {
+      font-size: 2.3rem; font-weight: 800; letter-spacing: -0.8px;
+      margin-bottom: 16px; color: #0d0d1a; line-height: 1.2;
+    }
+    .changes-text > p {
+      font-size: 1rem; color: #555; line-height: 1.75; margin-bottom: 28px;
+    }
+    .changes-points { list-style: none; display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
+    .changes-points li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 0.9rem; color: #444; line-height: 1.5;
+    }
+    .cp-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; flex-shrink: 0; margin-top: 1px; font-weight: 700;
+    }
+    .cp-green { background: #dcfce7; color: #16a34a; }
+    .cp-red   { background: #fee2e2; color: #dc2626; }
+    .cp-blue  { background: #dbeafe; color: #2563eb; }
+    /* Mini panel */
+    .diff-panel-wrap { flex-shrink: 0; position: relative; }
+    .diff-panel-glow {
+      position: absolute; width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%);
+      top: 50%; left: 50%; transform: translate(-50%,-50%);
+      pointer-events: none; border-radius: 50%; z-index: 0;
+    }
+    .diff-mini-panel {
+      position: relative; z-index: 1;
+      background: #ffffff; border-radius: 16px; overflow: hidden; width: 340px;
+      box-shadow: 0 28px 72px rgba(59,130,246,0.14), 0 0 0 1px rgba(59,130,246,0.1);
+      animation: float 4s ease-in-out infinite;
+    }
+    .dmp-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 18px 10px; border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+    .dmp-title { color: #1a1a1a; font-size: 0.93rem; font-weight: 700; }
+    .dmp-close  { color: #555; font-size: 1.1rem; }
+    .dmp-modes  { display: flex; padding: 10px 12px 0; gap: 4px; }
+    .dmp-mode {
+      padding: 5px 10px; border-radius: 7px; font-size: 0.74rem; font-weight: 600;
+      color: #555; background: transparent; border: none; font-family: inherit;
+    }
+    .dmp-mode.dmp-active { background: #3b82f6; color: #fff; }
+    .dmp-body { padding: 14px 18px 6px; }
+    .dmp-lbl {
+      font-size: 0.68rem; color: #888; margin-bottom: 5px;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .dmp-orig-box {
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 8px; padding: 10px 12px; font-size: 0.78rem; color: #666;
+      margin-bottom: 8px; line-height: 1.55;
+    }
+    .dmp-arrow-lbl { text-align: center; color: #3b82f6; font-size: 0.9rem; margin: 4px 0; }
+    .dmp-result-box {
+      background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.18);
+      border-radius: 8px; padding: 10px 12px; font-size: 0.78rem; color: #1e3a8a;
+      line-height: 1.6; min-height: 56px; transition: opacity 0.3s;
+    }
+    .dmp-changes-row { padding: 8px 0 4px; }
+    .dmp-diff-toggle {
+      background: none; border: 1px solid #bfdbfe; border-radius: 20px;
+      color: #3b82f6; font-size: 0.68rem; padding: 3px 10px; cursor: default;
+      font-family: inherit; font-weight: 500; transition: all 0.3s;
+    }
+    .dmp-diff-toggle.pulsing {
+      border-color: #3b82f6; background: #eff6ff;
+      box-shadow: 0 0 0 4px rgba(59,130,246,0.18);
+    }
+    .dmp-diff-toggle.showing { background: #eff6ff; border-color: #3b82f6; }
+    .dmp-footer-actions { display: flex; gap: 7px; padding: 0 18px 16px; }
+    .dmp-act {
+      flex: 1; padding: 8px; border-radius: 7px; font-size: 0.76rem; font-weight: 600;
+      border: none; cursor: default; font-family: inherit;
+    }
+    .dmp-act-p { background: #3b82f6; color: #fff; }
+    .dmp-act-s { background: #f1f5f9; color: #666; }
+    mark.dm-del {
+      background: #fee2e2; color: #b91c1c; border-radius: 2px; padding: 0 1px;
+      text-decoration: line-through; font-style: normal;
+    }
+    mark.dm-ins {
+      background: #dcfce7; color: #15803d; border-radius: 2px; padding: 0 1px;
+      font-style: normal;
+    }
+    @media(max-width:960px) {
+      .changes-inner { flex-direction: column-reverse; gap: 48px; }
+      .changes-showcase { padding: 64px 24px; }
+      .diff-mini-panel { width: 100%; max-width: 340px; }
+    }
+
     /* ── Demo ── */
     .demo { background: #f0f7ff; padding: 100px 60px; }
     .demo-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 36px; }
@@ -483,11 +597,11 @@
           <span class="ext-close">×</span>
         </div>
         <div class="ext-tabs">
-          <button class="ext-tab active" data-label="Native rewrite" data-before="I want to inform you that I cannot attend the meeting because I have a schedule conflict." data-after="Just a heads-up — I won't be able to make the meeting. Something came up on my end.">Native</button>
-          <button class="ext-tab" data-label="Academic polish" data-before="Exercise is good for health and people who do it regularly live longer." data-after="Regular physical activity is strongly associated with reduced mortality and improved long-term health outcomes.">Academic</button>
-          <button class="ext-tab" data-label="Professional tone" data-before="I think we should maybe consider changing our approach to this project." data-after="I recommend we revisit our approach — there's a clear opportunity to improve outcomes.">Pro</button>
-          <button class="ext-tab" data-label="Simplified version" data-before="The implementation of this solution necessitates the utilization of specialized expertise." data-after="This solution requires expert help to set up.">Simplify</button>
-          <button class="ext-tab" data-label="Translated to English 🇯🇵→🇬🇧" data-before="私はこの会議に参加できません。スケジュールの都合があります。" data-after="I'm afraid I won't be able to join the meeting — I have a scheduling conflict on my end.">Translate</button>
+          <button class="ext-tab active" data-label="Native rewrite" data-changes="5" data-before="I want to inform you that I cannot attend the meeting because I have a schedule conflict." data-after="Just a heads-up — I won't be able to make the meeting. Something came up on my end.">Native</button>
+          <button class="ext-tab" data-label="Academic polish" data-changes="6" data-before="Exercise is good for health and people who do it regularly live longer." data-after="Regular physical activity is strongly associated with reduced mortality and improved long-term health outcomes.">Academic</button>
+          <button class="ext-tab" data-label="Professional tone" data-changes="4" data-before="I think we should maybe consider changing our approach to this project." data-after="I recommend we revisit our approach — there's a clear opportunity to improve outcomes.">Pro</button>
+          <button class="ext-tab" data-label="Simplified version" data-changes="5" data-before="The implementation of this solution necessitates the utilization of specialized expertise." data-after="This solution requires expert help to set up.">Simplify</button>
+          <button class="ext-tab" data-label="Translated to English 🇯🇵→🇬🇧" data-changes="0" data-before="私はこの会議に参加できません。スケジュールの都合があります。" data-after="I'm afraid I won't be able to join the meeting — I have a scheduling conflict on my end.">Translate</button>
         </div>
         <div class="ext-body">
           <div class="ext-lbl">Your text</div>
@@ -495,6 +609,9 @@
           <div class="ext-arrow">↓</div>
           <div class="ext-lbl" id="mockup-after-lbl">Native rewrite</div>
           <div class="ext-after" id="mockup-after">Just a heads-up — I won't be able to make the meeting. Something came up on my end.</div>
+          <div class="ext-diff-row" id="ext-diff-row">
+            <span class="ext-diff-static" id="ext-diff-static">✨ 5 changes · see diff ▾</span>
+          </div>
         </div>
         <div class="ext-actions">
           <button class="ext-btn ext-btn-p">Replace</button>
@@ -575,6 +692,62 @@
       <h3>Translate</h3>
       <p>Translate in any direction — turn your native language into fluent English, or convert English into 20+ languages. Powered by Gemini AI.</p>
       <span class="feat-tag">20+ Languages · Both Ways</span>
+    </div>
+  </div>
+</section>
+
+<!-- Changes Showcase -->
+<section class="changes-showcase" id="changes">
+  <div class="changes-inner">
+    <div class="changes-text">
+      <div class="sec-label">Word-level Diff</div>
+      <h2>See exactly what<br>WriteMate changed.</h2>
+      <p>After every rewrite, tap once to reveal a word-by-word comparison — green for added, red for removed. Clean view by default, diff on demand.</p>
+      <ul class="changes-points">
+        <li>
+          <span class="cp-dot cp-green">✓</span>
+          <span><strong>Green highlights</strong> show every word WriteMate added or rewrote</span>
+        </li>
+        <li>
+          <span class="cp-dot cp-red">✗</span>
+          <span><strong>Red strikethrough</strong> shows what was replaced or removed</span>
+        </li>
+        <li>
+          <span class="cp-dot cp-blue">◎</span>
+          <span><strong>Clean by default</strong> — diff is hidden until you tap the button</span>
+        </li>
+      </ul>
+      <a href="https://chromewebstore.google.com" class="btn-primary" style="display:inline-flex;font-size:0.88rem;padding:12px 24px;" id="changes-cta-btn">Try it free →</a>
+    </div>
+    <div class="diff-panel-wrap">
+      <div class="diff-panel-glow"></div>
+      <div class="diff-mini-panel">
+        <div class="dmp-header">
+          <span class="dmp-title">✦ WriteMate</span>
+          <span class="dmp-close">×</span>
+        </div>
+        <div class="dmp-modes">
+          <button class="dmp-mode">Native</button>
+          <button class="dmp-mode dmp-active">Academic</button>
+          <button class="dmp-mode">Pro</button>
+          <button class="dmp-mode">Simplify</button>
+        </div>
+        <div class="dmp-body">
+          <div class="dmp-lbl">Your text</div>
+          <div class="dmp-orig-box">The study show that exercise have positive effect on mental health of people.</div>
+          <div class="dmp-arrow-lbl">↓</div>
+          <div class="dmp-lbl">Academic polish</div>
+          <div class="dmp-result-box" id="dmp-result">Research demonstrates that regular exercise has a significant positive effect on mental health.</div>
+          <div class="dmp-changes-row">
+            <button class="dmp-diff-toggle" id="dmp-diff-toggle">✨ 5 changes · see diff ▾</button>
+          </div>
+        </div>
+        <div class="dmp-footer-actions">
+          <button class="dmp-act dmp-act-p">Replace</button>
+          <button class="dmp-act dmp-act-s">Copy</button>
+          <button class="dmp-act dmp-act-s">↺ Again</button>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -803,6 +976,8 @@
   const mockBefore = document.getElementById('mockup-before');
   const mockAfter = document.getElementById('mockup-after');
   const mockAfterLbl = document.getElementById('mockup-after-lbl');
+  const extDiffRow = document.getElementById('ext-diff-row');
+  const extDiffStatic = document.getElementById('ext-diff-static');
   let autoIdx = 0;
   let autoTimer;
   let typingTimer = null;
@@ -811,8 +986,10 @@
     extTabs.forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     if (typingTimer) { clearInterval(typingTimer); typingTimer = null; }
+    if (extDiffRow) extDiffRow.classList.remove('visible');
     const beforeText = tab.dataset.before;
     const afterText = tab.dataset.after;
+    const changes = parseInt(tab.dataset.changes || '0');
     if (mockAfterLbl && tab.dataset.label) mockAfterLbl.textContent = tab.dataset.label;
     mockBefore.style.opacity = '0';
     mockAfter.style.opacity = '0';
@@ -826,7 +1003,13 @@
       typingTimer = setInterval(() => {
         i++;
         mockAfter.textContent = afterText.slice(0, i);
-        if (i >= afterText.length) { clearInterval(typingTimer); typingTimer = null; }
+        if (i >= afterText.length) {
+          clearInterval(typingTimer); typingTimer = null;
+          if (changes > 0 && extDiffRow && extDiffStatic) {
+            extDiffStatic.textContent = `✨ ${changes} changes · see diff ▾`;
+            extDiffRow.classList.add('visible');
+          }
+        }
       }, speed);
     }, 350);
   }
@@ -842,6 +1025,53 @@
   const popup = document.querySelector('.ext-popup');
   popup.addEventListener('mouseenter', () => clearInterval(autoTimer));
   popup.addEventListener('mouseleave', () => { autoTimer = setInterval(cycleTab, 4200); });
+
+  /* ── Diff showcase animation ── */
+  const dmpResult = document.getElementById('dmp-result');
+  const dmpToggle = document.getElementById('dmp-diff-toggle');
+  if (dmpResult && dmpToggle) {
+    const cleanText = 'Research demonstrates that regular exercise has a significant positive effect on mental health.';
+    const diffHTML  = '<mark class="dm-del">The study show that exercise have</mark><mark class="dm-ins">Research demonstrates that regular exercise has</mark> <mark class="dm-ins">a significant </mark>positive effect on mental health<mark class="dm-del"> of people</mark>.';
+    let dmpPhase = 0;
+
+    function stepDmp() {
+      if (dmpPhase === 0) {
+        // clean state — hold
+        dmpResult.textContent = cleanText;
+        dmpToggle.textContent = '✨ 5 changes · see diff ▾';
+        dmpToggle.classList.remove('pulsing','showing');
+        dmpPhase = 1;
+        setTimeout(stepDmp, 2800);
+      } else if (dmpPhase === 1) {
+        // pulse button to attract attention
+        dmpToggle.classList.add('pulsing');
+        dmpPhase = 2;
+        setTimeout(stepDmp, 700);
+      } else if (dmpPhase === 2) {
+        // reveal diff
+        dmpToggle.classList.remove('pulsing');
+        dmpToggle.classList.add('showing');
+        dmpToggle.textContent = '✨ 5 changes · hide diff ▴';
+        dmpResult.style.opacity = '0';
+        setTimeout(() => {
+          dmpResult.innerHTML = diffHTML;
+          dmpResult.style.opacity = '1';
+        }, 250);
+        dmpPhase = 3;
+        setTimeout(stepDmp, 3200);
+      } else {
+        // fade back to clean
+        dmpResult.style.opacity = '0';
+        setTimeout(() => {
+          dmpResult.textContent = cleanText;
+          dmpResult.style.opacity = '1';
+          dmpPhase = 0;
+          stepDmp();
+        }, 300);
+      }
+    }
+    stepDmp();
+  }
 
 </script>
 
