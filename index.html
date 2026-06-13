@@ -198,52 +198,6 @@
       color: #3b82f6; background: #eff6ff; padding: 3px 10px; border-radius: 20px;
     }
 
-    /* ── Compare ── */
-    .compare { padding: 100px 60px; background: #fff; }
-    .cmp-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 36px; flex-wrap: wrap; }
-    .cmp-tab {
-      border: 1.5px solid #e2e8f0; border-radius: 30px; padding: 8px 22px;
-      font-size: 0.85rem; cursor: pointer; transition: all .2s;
-      background: #fff; color: #64748b; font-weight: 500; font-family: inherit;
-    }
-    .cmp-tab.active { background: #1e293b; color: #fff; border-color: #1e293b; }
-    .cmp-tab:hover:not(.active) { border-color: #3b82f6; color: #3b82f6; }
-    .cmp-original {
-      max-width: 760px; margin: 0 auto 32px;
-      background: #f8faff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 18px 24px;
-    }
-    .cmp-orig-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .cmp-orig-text { color: #64748b; font-size: 0.94rem; line-height: 1.75; font-style: italic; }
-    .cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 920px; margin: 0 auto; }
-    .cmp-card { border-radius: 18px; padding: 26px 28px; }
-    .cmp-gpt { background: #f8f9fb; border: 1.5px solid #e5e7eb; }
-    .cmp-wm {
-      background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
-      border: 2px solid #3b82f6;
-      box-shadow: 0 8px 40px rgba(59,130,246,0.13), 0 2px 8px rgba(59,130,246,0.08);
-      position: relative;
-    }
-    .cmp-wm::before {
-      content: '★ Winner'; position: absolute; top: -13px; right: 20px;
-      background: linear-gradient(90deg,#3b82f6,#6366f1); color: #fff;
-      font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 20px;
-      letter-spacing: 0.5px;
-    }
-    .cmp-card-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-    .cmp-model-name { font-size: 0.9rem; font-weight: 700; color: #6b7280; display: flex; align-items: center; gap: 6px; }
-    .cmp-wm .cmp-model-name { color: #1d4ed8; }
-    .cmp-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
-    .badge-bad { background: #fef2f2; color: #dc2626; }
-    .badge-good { background: #f0fdf4; color: #16a34a; }
-    .cmp-result { font-size: 0.94rem; line-height: 1.8; color: #6b7280; }
-    .cmp-wm .cmp-result { color: #1e293b; font-weight: 500; }
-    .cmp-note { max-width: 920px; margin: 24px auto 0; text-align: center; font-size: 0.8rem; color: #94a3b8; }
-    @media(max-width:700px) {
-      .compare { padding: 64px 24px; }
-      .cmp-grid { grid-template-columns: 1fr; }
-      .cmp-wm { margin-top: 20px; }
-    }
-
     /* ── Demo ── */
     .demo { background: #f0f7ff; padding: 100px 60px; }
     .demo-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 36px; }
@@ -625,41 +579,6 @@
   </div>
 </section>
 
-<!-- Compare -->
-<section class="compare" id="compare">
-  <div class="sec-header">
-    <div class="sec-label">Head to Head</div>
-    <h2>WriteMate vs ChatGPT</h2>
-    <p>Same input. See which one actually sounds human.</p>
-  </div>
-  <div class="cmp-tabs">
-    <button class="cmp-tab active" onclick="showCmp(0,this)">Work Email</button>
-    <button class="cmp-tab" onclick="showCmp(1,this)">Academic</button>
-    <button class="cmp-tab" onclick="showCmp(2,this)">LinkedIn Post</button>
-  </div>
-  <div class="cmp-original">
-    <div class="cmp-orig-label">✏️ Original text (ESL writer)</div>
-    <div class="cmp-orig-text" id="cmp-orig">I am sorry but I cannot come to meeting tomorrow. I have many works to do and also not feeling so well.</div>
-  </div>
-  <div class="cmp-grid">
-    <div class="cmp-card cmp-gpt">
-      <div class="cmp-card-hd">
-        <div class="cmp-model-name">🤖 ChatGPT</div>
-        <span class="cmp-badge badge-bad">⚠ Sounds translated</span>
-      </div>
-      <div class="cmp-result" id="cmp-gpt-text">I apologize, but I am unable to attend tomorrow's meeting. I have a lot of work to complete and I am also not feeling very well.</div>
-    </div>
-    <div class="cmp-card cmp-wm">
-      <div class="cmp-card-hd">
-        <div class="cmp-model-name">✦ WriteMate</div>
-        <span class="cmp-badge badge-good">✓ Sounds native</span>
-      </div>
-      <div class="cmp-result" id="cmp-wm-text">Really sorry — I'm going to have to skip tomorrow's meeting. I'm buried in work and not feeling great. Can we find another time?</div>
-    </div>
-  </div>
-  <p class="cmp-note">ChatGPT corrects grammar. WriteMate rewrites how a native speaker actually talks.</p>
-</section>
-
 <!-- Demo -->
 <section class="demo" id="demo">
   <div class="sec-header">
@@ -924,31 +843,6 @@
   popup.addEventListener('mouseenter', () => clearInterval(autoTimer));
   popup.addEventListener('mouseleave', () => { autoTimer = setInterval(cycleTab, 4200); });
 
-  /* ── Compare section ── */
-  const cmpData = [
-    {
-      orig: 'I am sorry but I cannot come to meeting tomorrow. I have many works to do and also not feeling so well.',
-      gpt:  "I apologize, but I am unable to attend tomorrow's meeting. I have a lot of work to complete and I am also not feeling very well.",
-      wm:   "Really sorry — I'm going to have to skip tomorrow's meeting. I'm buried in work and not feeling great. Can we find another time?",
-    },
-    {
-      orig: 'Many researches show that students who sleep enough time can study better and get more good grades in their tests.',
-      gpt:  'Much research shows that students who get enough sleep can study more effectively and achieve better grades in their exams.',
-      wm:   'A substantial body of research demonstrates a significant correlation between adequate sleep and academic performance, with well-rested students consistently outperforming sleep-deprived peers on standardized assessments.',
-    },
-    {
-      orig: 'I am very happy to join this new company. I think I will learn many things and grow my career here. Very excited!',
-      gpt:  'I am very happy to join this new company. I believe I will learn many things and advance my career here. Very excited!',
-      wm:   "Thrilled to officially be joining the team — this feels like exactly the right move at the right time. Can't wait to dig in and grow alongside such talented people.",
-    },
-  ];
-  window.showCmp = function(idx, btn) {
-    document.querySelectorAll('.cmp-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('cmp-orig').textContent     = cmpData[idx].orig;
-    document.getElementById('cmp-gpt-text').textContent = cmpData[idx].gpt;
-    document.getElementById('cmp-wm-text').textContent  = cmpData[idx].wm;
-  };
 </script>
 
 <script>
