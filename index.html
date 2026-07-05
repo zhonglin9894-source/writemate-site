@@ -8,1192 +8,1362 @@
   <meta name="description" content="NativeProse is a Chrome extension that rewrites your English to sound natural, professional, and native — in one click. Perfect for ESL writers and students.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --dark: #182C41;
+      --max: 1120px;
+    }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      color: #1a1a1a;
-      background: #fff;
+      font-family: 'Instrument Serif', Georgia, serif;
+      background: #000;
+      color: #fff;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    .ui { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    button, input { font-family: inherit; }
+
+    /* ── Fixed cinematic stage (never leaves) ── */
+    .stage {
+      position: fixed; inset: 0; z-index: 0;
+      background: #000;
+      pointer-events: none;
+    }
+    .stage-videos { position: absolute; inset: 0; overflow: hidden; }
+    .stage-videos video {
+      position: absolute; inset: -3%;
+      width: 106%; height: 106%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1000ms ease-in-out;
+      will-change: transform, opacity;
+    }
+    .stage-videos video.is-active {
+      opacity: 1;
+      animation: sceneryDrift 14s ease-in-out infinite alternate;
+    }
+    @keyframes sceneryDrift {
+      from { transform: translate3d(0, 0, 0) scale(1.03); }
+      to { transform: translate3d(-2%, -1%, 0) scale(1.07); }
+    }
+    .stage-shade {
+      position: absolute; inset: 0; z-index: 2;
+      background: linear-gradient(
+        180deg,
+        rgba(0,0,0,0.28) 0%,
+        rgba(0,0,0,0.1) 35%,
+        rgba(0,0,0,0.18) 65%,
+        rgba(0,0,0,0.5) 100%
+      );
     }
 
-    /* ── Nav ── */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0 60px; height: 64px;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(0,0,0,0.06);
-    }
-    .logo { font-size: 1.2rem; font-weight: 800; color: #3b82f6; letter-spacing: -0.3px; }
-    .nav-links { display: flex; align-items: center; gap: 4px; }
-    .nav-links a {
-      text-decoration: none; color: #555; font-size: 0.9rem; font-weight: 500;
-      padding: 8px 16px; border-radius: 8px; transition: all 0.15s;
-    }
-    .nav-links a:hover { color: #3b82f6; background: #eff6ff; }
-    .nav-cta { background: #3b82f6 !important; color: #fff !important; font-weight: 600 !important; }
-    .nav-cta:hover { background: #2563eb !important; }
-
-    /* ── Hero ── */
-    .hero {
-      display: flex; align-items: center; justify-content: center;
-      gap: 80px; padding: 100px 60px 80px;
-      background: linear-gradient(160deg, #f0f7ff 0%, #fff 50%, #e0f2fe 100%);
-      min-height: 90vh; overflow: hidden;
-    }
-    .hero-text { max-width: 560px; }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: #dbeafe; color: #3b82f6;
-      font-size: 0.78rem; font-weight: 600;
-      padding: 6px 14px; border-radius: 20px; margin-bottom: 24px; letter-spacing: 0.3px;
-    }
-    .hero h1 {
-      font-size: 3.6rem; font-weight: 900; line-height: 1.1;
-      letter-spacing: -1.5px; margin-bottom: 24px; color: #0d0d1a;
-    }
-    .hero h1 .hl { color: #3b82f6; }
-    .hero > .hero-text > p {
-      font-size: 1.1rem; color: #555; line-height: 1.75; margin-bottom: 40px; max-width: 480px;
-    }
-    .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
-    .btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: #3b82f6; color: #fff; padding: 14px 30px;
-      border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.97rem;
-      transition: all 0.2s; box-shadow: 0 4px 20px rgba(59,130,246,0.35);
-    }
-    .btn-primary:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 6px 28px rgba(59,130,246,0.45); }
-    .btn-ghost {
-      display: inline-flex; align-items: center; gap: 6px;
-      color: #3b82f6; font-weight: 600; font-size: 0.92rem;
-      text-decoration: none; padding: 14px 22px; border-radius: 10px;
-      border: 1.5px solid #bfdbfe; transition: all 0.2s;
-    }
-    .btn-ghost:hover { background: #eff6ff; border-color: #3b82f6; }
-    .hero-hint { font-size: 0.8rem; color: #aaa; }
-
-    /* Extension Mockup */
-    .hero-visual { flex-shrink: 0; }
-    .mockup-wrap { position: relative; width: 360px; }
-    .mockup-glow {
-      position: absolute; width: 320px; height: 320px;
-      background: radial-gradient(circle, rgba(59,130,246,0.22) 0%, transparent 70%);
-      top: 50%; left: 50%; transform: translate(-50%,-50%);
-      border-radius: 50%; pointer-events: none;
-    }
-    .ext-popup {
-      background: #ffffff; border-radius: 16px; overflow: hidden; width: 340px;
-      box-shadow: 0 28px 72px rgba(59,130,246,0.14), 0 0 0 1px rgba(59,130,246,0.1);
-      animation: float 4s ease-in-out infinite;
-    }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-    .ext-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 14px 18px 10px; border-bottom: 1px solid rgba(0,0,0,0.07);
-    }
-    .ext-title { color: #1a1a1a; font-size: 0.93rem; font-weight: 700; }
-    .ext-close { color: #555; font-size: 1.1rem; }
-    .ext-tabs {
-      display: flex; padding: 10px 12px 0; gap: 4px; overflow-x: auto;
-    }
-    .ext-tabs::-webkit-scrollbar { display: none; }
-    .ext-tab {
-      padding: 5px 8px; border-radius: 7px; font-size: 0.74rem; font-weight: 600;
-      cursor: pointer; color: #555; white-space: nowrap;
-      border: none; background: transparent; transition: all 0.15s; font-family: inherit;
-    }
-    .ext-tab.active { background: #3b82f6; color: #fff; }
-    .ext-tab:hover:not(.active) { background: rgba(0,0,0,0.04); color: #555; }
-    .ext-body { padding: 14px 18px; }
-    .ext-lbl { font-size: 0.7rem; color: #555; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .ext-before {
-      background: #f8fafc; border: 1px solid #e2e8f0;
-      border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; color: #666;
-      margin-bottom: 8px; line-height: 1.55;
-    }
-    .ext-arrow { text-align: center; color: #3b82f6; font-size: 0.9rem; margin: 4px 0; }
-    .ext-after {
-      background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.18);
-      border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; color: #1e3a8a;
-      line-height: 1.55;
-    }
-    .ext-actions { display: flex; gap: 7px; padding: 8px 18px 16px; }
-    .ext-btn {
-      flex: 1; padding: 8px; border-radius: 7px; font-size: 0.76rem; font-weight: 600;
-      border: none; cursor: pointer; transition: all 0.15s; font-family: inherit;
-    }
-    .ext-btn-p { background: #3b82f6; color: #fff; }
-    .ext-btn-s { background: #f1f5f9; color: #666; }
-
-    /* ── Trust bar ── */
-    .trust-bar {
-      display: flex; justify-content: center; align-items: center;
-      gap: 48px; padding: 26px 60px;
-      background: #fff; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap;
-    }
-    .trust-item { display: flex; align-items: center; gap: 9px; color: #666; font-size: 0.86rem; font-weight: 500; }
-    .trust-item strong { color: #1a1a1a; }
-
-    /* ── Pain section ── */
-    .pain { background: linear-gradient(160deg, #e0f2fe 0%, #eff6ff 100%); color: #0d1f3c; padding: 100px 60px; text-align: center; }
-    .sec-label {
-      font-size: 0.74rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 1.5px; color: #3b82f6; margin-bottom: 14px;
-    }
-    .pain h2 {
-      font-size: 2.5rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.8px;
-      margin-bottom: 18px; max-width: 680px; margin-left: auto; margin-right: auto; color: #0d1f3c;
-    }
-    .pain > p {
-      font-size: 1rem; color: #4a6080; max-width: 540px;
-      margin: 0 auto 60px; line-height: 1.7;
-    }
-    .pain-cards { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-    .pain-card {
-      background: #fff; border: 1.5px solid #bfdbfe;
-      border-radius: 16px; padding: 28px 26px; max-width: 275px; text-align: left;
-      transition: all 0.2s;
-    }
-    .pain-card:hover { border-color: #3b82f6; box-shadow: 0 4px 20px rgba(59,130,246,0.12); }
-    .pain-emoji { font-size: 1.7rem; margin-bottom: 14px; }
-    .pain-card h3 { font-size: 0.92rem; font-weight: 700; margin-bottom: 8px; color: #0d1f3c; }
-    .pain-card p { font-size: 0.83rem; color: #556; line-height: 1.65; }
-
-    /* ── Features ── */
-    .features { padding: 100px 60px; background: #fafcff; }
-    .sec-header { text-align: center; margin-bottom: 60px; }
-    .sec-header h2 {
-      font-size: 2.3rem; font-weight: 800; letter-spacing: -0.8px;
-      margin-bottom: 14px; color: #0d0d1a;
-    }
-    .sec-header p { font-size: 1rem; color: #666; max-width: 500px; margin: 0 auto; line-height: 1.7; }
-    .features-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 20px; max-width: 1100px; margin: 0 auto;
-    }
-    .feat-card {
-      padding: 30px; border-radius: 16px; border: 1.5px solid #f0f0f8;
-      transition: all 0.25s; position: relative; overflow: hidden;
-    }
-    .feat-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, #3b82f6, #60a5fa);
-      opacity: 0; transition: opacity 0.25s;
-    }
-    .feat-card:hover { border-color: #bfdbfe; box-shadow: 0 8px 32px rgba(59,130,246,0.1); transform: translateY(-2px); }
-    .feat-card:hover::before { opacity: 1; }
-    .feat-icon {
-      width: 46px; height: 46px; background: #eff6ff; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.3rem; margin-bottom: 18px;
-    }
-    .feat-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; color: #0d0d1a; }
-    .feat-card p { font-size: 0.85rem; color: #666; line-height: 1.65; }
-    .feat-tag {
-      display: inline-block; margin-top: 12px; font-size: 0.73rem; font-weight: 600;
-      color: #3b82f6; background: #eff6ff; padding: 3px 10px; border-radius: 20px;
-    }
-
-    /* ── Hero diff button ── */
-    .ext-diff-row { padding: 2px 18px 8px; opacity: 0; transition: opacity 0.4s; }
-    .ext-diff-row.visible { opacity: 1; }
-    .ext-diff-static {
-      background: none; border: 1px solid #bfdbfe; border-radius: 20px;
-      color: #3b82f6; font-size: 0.68rem; padding: 3px 10px;
-      font-family: inherit; font-weight: 500; cursor: pointer; display: inline-block;
-      transition: all 0.2s;
-    }
-    .ext-diff-static:hover { background: #eff6ff; }
-    .ext-diff-static.active { background: #eff6ff; border-color: #3b82f6; }
-    .ext-diff-static, .dmp-diff-toggle { position: relative; overflow: hidden; }
-    .btn-ripple {
-      position: absolute; top: 50%; left: 50%; pointer-events: none;
-      width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%;
-      background: rgba(59,130,246,0.38);
-      animation: btn-ripple-anim 0.65s ease-out forwards;
-    }
-    @keyframes btn-ripple-anim { to { transform: scale(25); opacity: 0; } }
-
-    /* ── Changes Showcase ── */
-    .changes-showcase {
-      padding: 100px 60px;
-      background: linear-gradient(160deg, #fafcff 0%, #eff6ff 50%, #fafcff 100%);
+    /* ── Liquid glass ── */
+    .liquid-glass {
+      background: rgba(255, 255, 255, 0.01);
+      background-blend-mode: luminosity;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: none;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      position: relative;
       overflow: hidden;
     }
-    .changes-inner {
+    .liquid-glass::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      padding: 1.4px;
+      background: linear-gradient(180deg,
+        rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+        rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+        rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    .liquid-glass-strong {
+      background: rgba(255, 255, 255, 0.06);
+      background-blend-mode: luminosity;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.14), 0 12px 40px rgba(0,0,0,0.18);
+      position: relative;
+      overflow: hidden;
+    }
+    .liquid-glass-strong::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      padding: 1.4px;
+      background: linear-gradient(180deg,
+        rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.18) 20%,
+        rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+        rgba(255,255,255,0.18) 80%, rgba(255,255,255,0.5) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* Theme: light text by default, dark on video 3 */
+    .theme-text {
+      color: #fff;
+      transition: color 700ms ease;
+    }
+    .theme-muted {
+      color: rgba(255,255,255,0.9);
+      transition: color 700ms ease;
+    }
+    .theme-soft {
+      color: rgba(255,255,255,0.7);
+      transition: color 700ms ease;
+    }
+    body.is-dark-scene .theme-text { color: var(--dark); }
+    body.is-dark-scene .theme-muted { color: rgba(24,44,65,0.88); }
+    body.is-dark-scene .theme-soft { color: rgba(24,44,65,0.7); }
+    body.is-dark-scene .nav-logo,
+    body.is-dark-scene .hero-panel { /* nav stays white always per spec for Lumora - user said navbar remains white. Keep nav white. */ }
+
+    /* ── Scroll layer ── */
+    .scroll {
+      position: relative; z-index: 2;
+    }
+
+    /* ── Nav (fixed, always white) ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+      padding: 18px 20px;
+      pointer-events: none;
+    }
+    .nav-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      pointer-events: auto;
+    }
+    .nav-logo {
+      font-style: italic;
+      font-size: 1.35rem;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+    @media (min-width: 640px) {
+      .nav-logo { font-size: 1.5rem; }
+    }
+    .nav-pill {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      border-radius: 9999px;
+      padding: 6px 6px 6px 14px;
+    }
+    @media (min-width: 768px) {
+      .nav-pill { display: flex; }
+    }
+    .nav-pill a {
+      font-family: system-ui, sans-serif;
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.9);
+      padding: 8px 12px;
+      border-radius: 9999px;
+      transition: color 0.2s;
+    }
+    .nav-pill a:hover { color: #fff; }
+    .nav-pill .btn-solid {
+      background: #fff;
+      color: #000;
+      font-family: system-ui, sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      margin-left: 4px;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .nav-pill .btn-solid:hover { background: #f0f0f0; transform: translateY(-1px); }
+
+    .nav-burger {
+      display: flex;
+      width: 44px; height: 44px;
+      border-radius: 9999px;
+      align-items: center; justify-content: center;
+      border: none; cursor: pointer; color: #fff;
+      position: relative;
+    }
+    @media (min-width: 768px) {
+      .nav-burger { display: none; }
+    }
+    .nav-burger svg {
+      position: absolute;
+      width: 22px; height: 22px;
+      transition: transform 300ms var(--ease), opacity 300ms var(--ease);
+    }
+    .nav-burger .icon-menu { opacity: 1; transform: rotate(0) scale(1); }
+    .nav-burger .icon-x { opacity: 0; transform: rotate(-90deg) scale(0.75); }
+    .nav-burger.is-open .icon-menu { opacity: 0; transform: rotate(90deg) scale(0.75); }
+    .nav-burger.is-open .icon-x { opacity: 1; transform: rotate(0) scale(1); }
+
+    /* Mobile menu */
+    .mobile-menu {
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       display: flex; align-items: center; justify-content: center;
-      gap: 80px; max-width: 1100px; margin: 0 auto;
+      opacity: 0; pointer-events: none;
+      transition: opacity 500ms var(--ease);
     }
-    .changes-text { max-width: 460px; flex-shrink: 0; }
-    .changes-text h2 {
-      font-size: 2.3rem; font-weight: 800; letter-spacing: -0.8px;
-      margin-bottom: 16px; color: #0d0d1a; line-height: 1.2;
+    .mobile-menu.is-open { opacity: 1; pointer-events: auto; }
+    .mobile-panel {
+      display: flex; flex-direction: column; align-items: center; gap: 22px;
     }
-    .changes-text > p {
-      font-size: 1rem; color: #555; line-height: 1.75; margin-bottom: 28px;
+    .mobile-panel a, .mobile-panel .btn-solid {
+      font-family: system-ui, sans-serif;
+      color: #fff;
+      font-size: 1.875rem;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 500ms var(--ease), transform 500ms var(--ease);
     }
-    .changes-points { list-style: none; display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
-    .changes-points li {
-      display: flex; align-items: flex-start; gap: 10px;
-      font-size: 0.9rem; color: #444; line-height: 1.5;
+    .mobile-menu.is-open .mobile-panel a,
+    .mobile-menu.is-open .mobile-panel .btn-solid {
+      opacity: 1;
+      transform: translateY(0);
     }
-    .cp-dot {
-      width: 22px; height: 22px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.65rem; flex-shrink: 0; margin-top: 1px; font-weight: 700;
+    .mobile-panel a:nth-child(1) { transition-delay: 100ms; }
+    .mobile-panel a:nth-child(2) { transition-delay: 150ms; }
+    .mobile-panel a:nth-child(3) { transition-delay: 200ms; }
+    .mobile-panel a:nth-child(4) { transition-delay: 250ms; }
+    .mobile-panel .btn-solid {
+      transition-delay: 300ms;
+      background: #fff; color: #000;
+      font-size: 1rem; font-weight: 500;
+      padding: 12px 28px; border-radius: 9999px;
+      transform: translateY(16px) scale(0.95);
     }
-    .cp-green { background: #dcfce7; color: #16a34a; }
-    .cp-red   { background: #fee2e2; color: #dc2626; }
-    .cp-blue  { background: #dbeafe; color: #2563eb; }
-    /* Mini panel */
-    .diff-panel-wrap { flex-shrink: 0; position: relative; }
-    .diff-panel-glow {
-      position: absolute; width: 300px; height: 300px;
-      background: radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%);
-      top: 50%; left: 50%; transform: translate(-50%,-50%);
-      pointer-events: none; border-radius: 50%; z-index: 0;
+    .mobile-menu.is-open .mobile-panel .btn-solid {
+      transform: translateY(0) scale(1);
     }
-    .diff-mini-panel {
-      position: relative; z-index: 1;
-      background: #ffffff; border-radius: 16px; overflow: hidden; width: 340px;
-      box-shadow: 0 28px 72px rgba(59,130,246,0.14), 0 0 0 1px rgba(59,130,246,0.1);
-      animation: float 4s ease-in-out infinite;
+
+    /* ── Hero panel ── */
+    .hero {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex; flex-direction: column;
+      padding: 96px 20px 28px;
     }
-    .dmp-header {
+    .hero-main {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      gap: 22px;
+    }
+    @media (max-width: 639px) {
+      .hero { padding: 84px 16px 20px; }
+      .hero-main { gap: 14px; justify-content: flex-start; padding-top: 4vh; }
+    }
+    .hero-anchor {
+      display: inline-flex; align-items: center; gap: 9px;
+      font-family: system-ui, sans-serif;
+      font-size: 0.92rem; font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 9999px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.28);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    }
+    @media (min-width: 640px) {
+      .hero-anchor { font-size: 1rem; padding: 11px 22px; }
+    }
+    .hero-anchor .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #86efac;
+      box-shadow: 0 0 10px rgba(134,239,172,0.75);
+      flex-shrink: 0;
+    }
+    body.is-dark-scene .hero-anchor {
+      color: var(--dark);
+      background: rgba(255,255,255,0.55);
+      border-color: rgba(24,44,65,0.12);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .badge {
+      display: inline-flex;
+      border-radius: 9999px;
+      padding: 8px 16px;
+      font-family: system-ui, sans-serif;
+      font-size: 0.8rem;
+    }
+    .hero h1 {
+      font-size: 2.25rem;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      max-width: 56rem;
+      font-weight: 400;
+    }
+    @media (min-width: 640px) { .hero h1 { font-size: 3rem; } }
+    @media (min-width: 768px) { .hero h1 { font-size: 4.5rem; } }
+    @media (min-width: 1024px) { .hero h1 { font-size: 5.5rem; } }
+    .hero-sub {
+      font-family: system-ui, sans-serif;
+      font-size: 1rem;
+      line-height: 1.65;
+      max-width: 32rem;
+    }
+    @media (min-width: 640px) {
+      .hero-sub { font-size: 1.08rem; }
+    }
+
+    /* Hero CTA — primary action above demo */
+    .hero-cta {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      width: 100%; max-width: 22rem;
+      order: 1;
+    }
+    .btn-hero-primary {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 100%;
+      padding: 15px 28px;
+      border-radius: 9999px;
+      background: #fff;
+      color: #000;
+      font-family: system-ui, sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-hero-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.2);
+    }
+    body.is-dark-scene .btn-hero-primary {
+      background: var(--dark);
+      color: #fff;
+    }
+    .hero-cta-hint {
+      font-family: system-ui, sans-serif;
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+    .hero-trust {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+      order: 1;
+      max-width: 28rem;
+    }
+    .hero-trust span {
+      font-family: system-ui, sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.85);
+      padding: 5px 12px;
+      border-radius: 9999px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    body.is-dark-scene .hero-trust span {
+      color: rgba(24,44,65,0.85);
+      background: rgba(255,255,255,0.45);
+      border-color: rgba(24,44,65,0.1);
+    }
+    @media (max-width: 639px) {
+      .btn-hero-primary { font-size: 1.05rem; padding: 16px 24px; }
+    }
+
+    /* Scene dots — fixed corner, unobtrusive */
+    .scene-dots {
+      position: fixed;
+      bottom: 22px;
+      right: 18px;
+      z-index: 35;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 10px;
+      border-radius: 9999px;
+      background: rgba(0,0,0,0.28);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      pointer-events: auto;
+    }
+    .scene-dots button {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.45);
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.25s, border-color 0.25s;
+    }
+    .scene-dots button:hover { transform: scale(1.15); border-color: rgba(255,255,255,0.85); }
+    .scene-dots button.is-active {
+      background: #fff;
+      border-color: #fff;
+      transform: scale(1.1);
+    }
+    .scene-dots button:focus-visible {
+      outline: 2px solid rgba(255,255,255,0.8);
+      outline-offset: 2px;
+    }
+    @media (max-width: 639px) {
+      .scene-dots { bottom: 14px; right: 12px; gap: 6px; padding: 6px 8px; }
+      .scene-dots button { width: 8px; height: 8px; }
+    }
+
+    /* Product demo — below CTA, doesn't bury the scenery */
+    .demo-float {
+      width: min(380px, 92vw);
+      margin: 12px auto 0;
+      order: 2;
+      border-radius: 1.15rem;
+      padding: 0;
+      text-align: left;
+      background: rgba(8, 12, 20, 0.38);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.22), inset 0 1px 1px rgba(255,255,255,0.12);
+      position: relative;
+      overflow: hidden;
+    }
+    .demo-float::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.06) 40%, rgba(255,255,255,0.2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    .demo-head {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 14px 18px 10px; border-bottom: 1px solid rgba(0,0,0,0.07);
+      padding: 12px 14px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-family: system-ui, sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.92);
     }
-    .dmp-title { color: #1a1a1a; font-size: 0.93rem; font-weight: 700; }
-    .dmp-close  { color: #555; font-size: 1.1rem; }
-    .dmp-modes  { display: flex; padding: 10px 12px 0; gap: 4px; }
-    .dmp-mode {
-      padding: 5px 10px; border-radius: 7px; font-size: 0.74rem; font-weight: 600;
-      color: #555; background: transparent; border: none; font-family: inherit;
+    .demo-head .x { opacity: 0.4; font-weight: 400; }
+    .demo-tabs {
+      display: flex; gap: 4px; padding: 10px 12px 0; overflow-x: auto;
     }
-    .dmp-mode.dmp-active { background: #3b82f6; color: #fff; }
-    .dmp-body { padding: 14px 18px 6px; }
-    .dmp-lbl {
-      font-size: 0.68rem; color: #888; margin-bottom: 5px;
-      font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    .demo-tabs::-webkit-scrollbar { display: none; }
+    .demo-tab {
+      border: none; cursor: pointer;
+      padding: 4px 10px; border-radius: 9999px;
+      font-family: system-ui, sans-serif;
+      font-size: 0.72rem; font-weight: 600;
+      color: rgba(255,255,255,0.55);
+      background: transparent;
+      white-space: nowrap;
     }
-    .dmp-orig-box {
-      background: #f8fafc; border: 1px solid #e2e8f0;
-      border-radius: 8px; padding: 10px 12px; font-size: 0.78rem; color: #666;
-      margin-bottom: 8px; line-height: 1.55;
+    .demo-tab.is-on { background: rgba(255,255,255,0.92); color: #111; }
+    .demo-body { padding: 10px 14px 12px; font-family: system-ui, sans-serif; }
+    .demo-lbl {
+      font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: rgba(255,255,255,0.45); margin-bottom: 5px; font-weight: 600;
     }
-    .dmp-arrow-lbl { text-align: center; color: #3b82f6; font-size: 0.9rem; margin: 4px 0; }
-    .dmp-result-box {
-      background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.18);
-      border-radius: 8px; padding: 10px 12px; font-size: 0.78rem; color: #1e3a8a;
-      line-height: 1.6; min-height: 56px; transition: opacity 0.3s;
+    .demo-before, .demo-after {
+      border-radius: 10px; padding: 9px 11px;
+      font-size: 0.78rem; line-height: 1.5;
+      min-height: 44px;
+      transition: opacity 0.18s;
     }
-    .dmp-changes-row { padding: 8px 0 4px; }
-    .dmp-diff-toggle {
-      background: none; border: 1px solid #bfdbfe; border-radius: 20px;
-      color: #3b82f6; font-size: 0.68rem; padding: 3px 10px; cursor: default;
-      font-family: inherit; font-weight: 500; transition: all 0.3s;
+    .demo-before {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.62);
+      margin-bottom: 6px;
     }
-    .dmp-diff-toggle.pulsing {
-      border-color: #3b82f6; background: #eff6ff;
-      box-shadow: 0 0 0 4px rgba(59,130,246,0.18);
+    .demo-arrow { text-align: center; color: rgba(255,255,255,0.35); font-size: 0.8rem; margin: 2px 0; }
+    .demo-after {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.92);
     }
-    .dmp-diff-toggle.showing { background: #eff6ff; border-color: #3b82f6; }
-    .dmp-footer-actions { display: flex; gap: 7px; padding: 0 18px 16px; }
-    .dmp-act {
-      flex: 1; padding: 8px; border-radius: 7px; font-size: 0.76rem; font-weight: 600;
-      border: none; cursor: default; font-family: inherit;
+    .demo-diff-row { padding: 6px 0 2px; opacity: 0; transition: opacity 0.35s; }
+    .demo-diff-row.show { opacity: 1; }
+    .demo-diff-btn {
+      border: 1px solid rgba(255,255,255,0.2);
+      background: transparent;
+      color: rgba(255,255,255,0.75);
+      border-radius: 9999px;
+      font-family: system-ui, sans-serif;
+      font-size: 0.66rem;
+      padding: 3px 10px;
+      cursor: pointer;
     }
-    .dmp-act-p { background: #3b82f6; color: #fff; }
-    .dmp-act-s { background: #f1f5f9; color: #666; }
+    .demo-actions { display: flex; gap: 6px; padding: 4px 14px 12px; }
+    .demo-actions span {
+      flex: 1; text-align: center;
+      border-radius: 9999px;
+      padding: 7px;
+      font-family: system-ui, sans-serif;
+      font-size: 0.72rem; font-weight: 600;
+    }
+    .demo-actions .p { background: rgba(255,255,255,0.92); color: #111; }
+    .demo-actions .s { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
     mark.dm-del {
-      background: #fee2e2; color: #b91c1c; border-radius: 2px; padding: 0 1px;
-      text-decoration: line-through; font-style: normal;
+      background: rgba(248,113,113,0.2); color: #fecaca;
+      text-decoration: line-through; border-radius: 2px; padding: 0 2px;
     }
     mark.dm-ins {
-      background: #dcfce7; color: #15803d; border-radius: 2px; padding: 0 1px;
-      font-style: normal;
+      background: rgba(74,222,128,0.18); color: #bbf7d0;
+      border-radius: 2px; padding: 0 2px;
     }
-    @media(max-width:960px) {
-      .changes-inner { flex-direction: column-reverse; gap: 48px; }
-      .changes-showcase { padding: 64px 24px; }
-      .diff-mini-panel { width: 100%; max-width: 340px; }
+    body.is-dark-scene .demo-float {
+      background: rgba(255,255,255,0.42);
+    }
+    body.is-dark-scene .demo-head,
+    body.is-dark-scene .demo-after { color: var(--dark); }
+    body.is-dark-scene .demo-before { color: rgba(24,44,65,0.7); background: rgba(24,44,65,0.06); }
+    body.is-dark-scene .demo-lbl { color: rgba(24,44,65,0.45); }
+    body.is-dark-scene .demo-tab { color: rgba(24,44,65,0.55); }
+    body.is-dark-scene .demo-tab.is-on { background: var(--dark); color: #fff; }
+    body.is-dark-scene .demo-actions .p { background: var(--dark); color: #fff; }
+    body.is-dark-scene .demo-actions .s { background: rgba(24,44,65,0.08); color: var(--dark); }
+    body.is-dark-scene .demo-diff-btn { color: var(--dark); border-color: rgba(24,44,65,0.25); }
+    @media (max-width: 639px) {
+      .demo-float {
+        width: min(320px, 88vw);
+        transform: scale(0.9);
+        transform-origin: top center;
+        margin-top: 20px;
+      }
+      .demo-head { padding: 10px 12px 6px; font-size: 0.78rem; }
+      .demo-body { padding: 8px 12px 10px; }
+      .demo-before, .demo-after { font-size: 0.74rem; min-height: 40px; }
     }
 
-    /* ── Demo ── */
-    .demo { background: #f0f7ff; padding: 100px 60px; }
-    .demo-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 36px; }
-    .demo-tab-btn {
-      padding: 9px 20px; border-radius: 8px; font-size: 0.86rem; font-weight: 600;
-      cursor: pointer; border: 1.5px solid #bfdbfe; background: transparent;
-      color: #666; transition: all 0.2s; font-family: inherit;
+    /* ── Content sections over same stage ── */
+    .panel-wrap {
+      padding: 40px 20px 80px;
+      display: flex; flex-direction: column; gap: 28px;
+      max-width: var(--max);
+      margin: 0 auto;
     }
-    .demo-tab-btn.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
-    .demo-tab-btn:hover:not(.active) { border-color: #3b82f6; color: #3b82f6; }
-    .demo-content { max-width: 840px; margin: 0 auto; }
-    .demo-panel { display: none; }
-    .demo-panel.active { display: block; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-    .demo-compare {
-      display: grid; grid-template-columns: 1fr 44px 1fr;
-      align-items: stretch; background: #fff; border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(59,130,246,0.1); overflow: hidden;
+    .panel {
+      border-radius: 1.5rem;
+      padding: 36px 28px;
     }
-    .demo-side { padding: 32px; }
-    .demo-side-lbl {
-      font-size: 0.73rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 1px; margin-bottom: 12px;
+    @media (min-width: 768px) {
+      .panel { padding: 48px 40px; }
     }
-    .demo-before .demo-side-lbl { color: #f59e0b; }
-    .demo-after .demo-side-lbl { color: #3b82f6; }
-    .demo-text { font-size: 0.93rem; line-height: 1.75; color: #666; }
-    .demo-after .demo-text { color: #1a1a1a; font-weight: 500; }
-    .demo-arrow-col {
-      display: flex; align-items: center; justify-content: center;
-      background: #eff6ff; color: #3b82f6; font-size: 1.1rem; font-weight: 700;
+    .panel-kicker {
+      font-family: system-ui, sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 14px;
     }
-    .demo-before { border-right: 1px solid #f0f0f0; }
+    .panel h2 {
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      font-weight: 400;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .panel-lead {
+      font-family: system-ui, sans-serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.78);
+      max-width: 36rem;
+      margin-bottom: 28px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 768px) {
+      .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    }
+    .grid-5 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 640px) {
+      .grid-5 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .grid-5 { grid-template-columns: repeat(3, 1fr); }
+    }
+    .mini-card {
+      border-radius: 1.15rem;
+      padding: 22px 20px;
+      min-height: 150px;
+      display: flex; flex-direction: column;
+    }
+    .mini-card .tag {
+      font-family: system-ui, sans-serif;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .mini-card h3 {
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: #fff;
+      margin-top: auto;
+      margin-bottom: 8px;
+    }
+    .mini-card p {
+      font-family: system-ui, sans-serif;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: rgba(255,255,255,0.72);
+    }
 
-    /* ── How it works ── */
-    .how { padding: 100px 60px; background: #f5f9ff; }
     .steps {
-      display: flex; justify-content: center; align-items: flex-start;
-      gap: 0; max-width: 860px; margin: 0 auto; flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
     }
-    .step { flex: 1; min-width: 190px; text-align: center; padding: 0 28px; position: relative; }
-    .step:not(:last-child)::after {
-      content: '→'; position: absolute; right: -4px; top: 20px;
-      color: #ddd; font-size: 1.1rem;
+    @media (min-width: 768px) {
+      .steps { grid-template-columns: repeat(3, 1fr); }
     }
-    .step-num {
-      width: 52px; height: 52px;
-      background: linear-gradient(135deg, #3b82f6, #60a5fa);
-      border-radius: 14px; display: flex; align-items: center; justify-content: center;
-      font-size: 1.25rem; font-weight: 800; color: #fff;
-      margin: 0 auto 18px; box-shadow: 0 4px 16px rgba(59,130,246,0.3);
+    .step {
+      border-radius: 1.15rem;
+      padding: 24px 20px;
     }
-    .step h3 { font-size: 0.92rem; font-weight: 700; margin-bottom: 7px; color: #0d0d1a; }
-    .step p { font-size: 0.83rem; color: #777; line-height: 1.6; }
+    .step .num {
+      font-family: system-ui, sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 18px;
+    }
+    .step h3 {
+      font-size: 1.5rem;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .step p {
+      font-family: system-ui, sans-serif;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.72);
+    }
 
-    /* ── Pricing ── */
-    .pricing { background: linear-gradient(160deg, #f0f7ff 0%, #e8f4ff 40%, #eef2ff 100%); padding: 100px 60px; }
-    .pricing-cards {
-      display: flex; justify-content: center; gap: 20px;
-      max-width: 880px; margin: 0 auto; flex-wrap: wrap; align-items: flex-start;
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 900px) {
+      .pricing-grid { grid-template-columns: repeat(3, 1fr); }
     }
     .price-card {
-      background: #fff; border: 1.5px solid #e8e8f5;
-      border-radius: 20px; padding: 34px 28px; width: 252px;
-      position: relative; transition: all 0.25s;
+      border-radius: 1.25rem;
+      padding: 28px 22px;
+      display: flex; flex-direction: column;
     }
-    .price-card:hover { box-shadow: 0 8px 32px rgba(59,130,246,0.1); transform: translateY(-2px); }
-    .price-card.pop { border-color: #3b82f6; box-shadow: 0 4px 28px rgba(59,130,246,0.18); }
-    .pop-badge {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: #3b82f6; color: #fff; font-size: 0.7rem; font-weight: 700;
-      padding: 4px 14px; border-radius: 20px; white-space: nowrap; letter-spacing: 0.4px;
+    .price-card.pop {
+      background: rgba(255,255,255,0.08);
     }
-    .price-tier { font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #999; margin-bottom: 10px; }
-    .price-val { font-size: 2.5rem; font-weight: 900; letter-spacing: -1px; color: #0d0d1a; margin-bottom: 4px; }
-    .price-val span { font-size: 0.95rem; font-weight: 500; color: #999; letter-spacing: 0; }
-    .price-desc { font-size: 0.82rem; color: #888; margin-bottom: 22px; line-height: 1.55; }
-    .price-features { list-style: none; margin-bottom: 26px; }
-    .price-features li {
-      font-size: 0.85rem; color: #555; padding: 5px 0;
-      display: flex; align-items: center; gap: 8px;
+    .price-card .tier {
+      font-family: system-ui, sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 12px;
     }
-    .price-features li::before { content: '✓'; color: #3b82f6; font-weight: 700; flex-shrink: 0; }
+    .price-card .val {
+      font-size: 2.8rem;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .price-card .val span {
+      font-family: system-ui, sans-serif;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.55);
+    }
+    .price-card .desc {
+      font-family: system-ui, sans-serif;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+    .price-card ul {
+      list-style: none;
+      margin-bottom: 24px;
+      flex: 1;
+    }
+    .price-card li {
+      font-family: system-ui, sans-serif;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.82);
+      padding: 5px 0;
+    }
+    .price-card li::before { content: '✓ '; color: rgba(255,255,255,0.45); }
     .price-btn {
-      display: block; text-align: center; padding: 12px; border-radius: 10px;
-      font-weight: 700; font-size: 0.88rem; text-decoration: none; transition: all 0.2s;
+      display: block; text-align: center;
+      border-radius: 9999px;
+      padding: 12px 16px;
+      font-family: system-ui, sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      background: #fff;
+      color: #000;
+      transition: transform 0.2s, background 0.2s;
     }
-    .price-btn-fill { background: #3b82f6; color: #fff; }
-    .price-btn-fill:hover { background: #2563eb; }
-    .price-btn-outline { border: 1.5px solid #bfdbfe; color: #3b82f6; }
-    .price-btn-outline:hover { background: #eff6ff; border-color: #3b82f6; }
+    .price-btn:hover { transform: translateY(-1px); background: #f2f2f2; }
+    .price-btn.ghost {
+      background: transparent;
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+    }
+    .price-btn.ghost:hover { background: rgba(255,255,255,0.08); }
 
-    /* ── Final CTA ── */
-    .final-cta {
-      position: relative;
-      background: linear-gradient(160deg, #eff6ff 0%, #fff 45%, #dbeafe 100%);
-      padding: 120px 60px; text-align: center; color: #0d1f3c; overflow: hidden;
+    .activate {
+      margin-top: 14px;
+      border-radius: 1.25rem;
+      padding: 24px;
+      display: flex; flex-wrap: wrap; gap: 16px; align-items: center;
     }
-    .final-cta::before {
-      content: ''; position: absolute; width: 800px; height: 800px;
-      background: radial-gradient(circle, rgba(59,130,246,0.13) 0%, transparent 65%);
-      top: -380px; left: -180px; pointer-events: none;
-      animation: ctaOrb1 12s ease-in-out infinite;
+    .activate h3 {
+      font-size: 1.4rem;
+      color: #fff;
+      margin-bottom: 4px;
     }
-    .final-cta::after {
-      content: ''; position: absolute; width: 700px; height: 700px;
-      background: radial-gradient(circle, rgba(96,165,250,0.1) 0%, transparent 65%);
-      bottom: -320px; right: -150px; pointer-events: none;
-      animation: ctaOrb2 15s ease-in-out infinite;
+    .activate p {
+      font-family: system-ui, sans-serif;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.7);
     }
-    @keyframes ctaOrb1 {
-      0%,100%{transform:translate(0,0) scale(1)}
-      33%{transform:translate(120px,70px) scale(1.1)}
-      66%{transform:translate(50px,-50px) scale(0.92)}
+    .act-row {
+      display: flex; gap: 8px; flex: 1; min-width: 260px;
     }
-    @keyframes ctaOrb2 {
-      0%,100%{transform:translate(0,0) scale(1)}
-      33%{transform:translate(-90px,-60px) scale(1.08)}
-      66%{transform:translate(-30px,50px) scale(0.9)}
-    }
-    .cta-inner { position: relative; z-index: 1; }
-    .cta-badge {
-      display: inline-block; background: rgba(59,130,246,0.1);
-      border: 1px solid rgba(59,130,246,0.22); color: #3b82f6;
-      font-size: 0.76rem; font-weight: 600; letter-spacing: 0.5px;
-      padding: 6px 16px; border-radius: 20px; margin-bottom: 28px;
-    }
-    .final-cta h2 { font-size: 2.8rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 16px; line-height: 1.1; color: #0d1f3c; }
-    .final-cta .cta-inner p { font-size: 1.05rem; color: #4a6080; margin-bottom: 40px; max-width: 440px; margin-left: auto; margin-right: auto; line-height: 1.7; }
-    .cta-sub { margin-top: 16px; font-size: 0.8rem; color: #94b4cc; }
-    .btn-white {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: #3b82f6; color: #fff; padding: 15px 36px;
-      border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.97rem;
-      transition: all 0.2s; box-shadow: 0 4px 24px rgba(59,130,246,0.35);
-    }
-    .btn-white:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,130,246,0.45); }
-
-    /* ── Footer ── */
-    footer {
-      background: #dbeafe; color: #6a8fb5; padding: 40px 60px;
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 20px; border-top: 1px solid #dbeafe;
-    }
-    .footer-logo { font-size: 1.05rem; font-weight: 800; color: #3b82f6; }
-    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
-    .footer-links a { color: #8bacc8; text-decoration: none; font-size: 0.83rem; transition: color 0.15s; }
-    .footer-links a:hover { color: #3b82f6; }
-    .footer-copy { font-size: 0.8rem; }
-    #mockup-before, #mockup-after { transition: opacity 0.18s ease; }
-
-    /* ── Steps active highlight ── */
-    .step { transition: transform 0.35s ease; }
-    .step.active .step-num {
-      transform: scale(1.22);
-      box-shadow: 0 8px 28px rgba(59,130,246,0.5);
-    }
-    .step-num { transition: transform 0.35s ease, box-shadow 0.35s ease; }
-    .step.active h3 { color: #3b82f6; }
-    .step h3 { transition: color 0.3s; }
-
-    /* ── Button bling ── */
-    @keyframes ctaBling {
-      0%,100% {
-        box-shadow: 0 4px 20px rgba(59,130,246,0.3), 0 0 0 0 rgba(147,197,253,0);
-      }
-      40% {
-        box-shadow: 0 6px 28px rgba(59,130,246,0.55), 0 0 0 5px rgba(147,197,253,0.28);
-      }
-      65% {
-        box-shadow: 0 6px 28px rgba(59,130,246,0.4), 0 0 0 10px rgba(147,197,253,0.08);
-      }
-    }
-    .btn-bling { animation: ctaBling 2.4s ease-in-out infinite; }
-
-    /* ── Activate ── */
-    .activate-wrap { max-width: 880px; margin: 44px auto 0; }
-    .activate-card {
-      display: flex; align-items: center; gap: 32px;
-      background: linear-gradient(135deg, #f0f7ff 0%, #ede9fe 60%, #e0f2fe 100%);
-      border-radius: 20px; padding: 28px 36px;
-      position: relative; overflow: hidden;
-      border: 2px solid transparent;
-      background-clip: padding-box;
-      box-shadow: 0 4px 24px rgba(59,130,246,0.13), 0 1px 4px rgba(0,0,0,0.04);
-    }
-    .activate-card::before {
-      content: ''; position: absolute; inset: -2px; border-radius: 22px; z-index: -1;
-      background: linear-gradient(135deg, #93c5fd, #3b82f6, #a5b4fc, #60a5fa);
-      background-size: 300% 300%;
-      animation: actBorder 4s ease infinite;
-    }
-    @keyframes actBorder {
-      0%,100% { background-position: 0% 50%; }
-      50%      { background-position: 100% 50%; }
-    }
-    .act-left { flex: 0 0 auto; }
-    .act-title {
-      font-size: 1.1rem; font-weight: 800; margin-bottom: 4px;
-      background: linear-gradient(90deg, #2563eb, #7c3aed);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .act-sub { font-size: 0.85rem; color: #64748b; white-space: nowrap; }
-    .act-right { flex: 1; }
-    .act-row { display: flex; gap: 8px; margin-bottom: 8px; }
     .act-row input {
-      flex: 1; padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px;
-      font-size: 0.88rem; font-family: 'Courier New', monospace; color: #1e293b;
-      outline: none; background: #f8faff; letter-spacing: 0.04em; transition: border-color .2s;
+      flex: 1;
+      border-radius: 9999px;
+      border: none;
+      outline: none;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
     }
-    .act-row input:focus { border-color: #3b82f6; background: #fff; }
-    .act-row input::placeholder { color: #94a3b8; font-family: inherit; }
+    .act-row input::placeholder { color: rgba(255,255,255,0.35); }
     .act-row button {
-      padding: 11px 22px;
-      background: linear-gradient(135deg, #3b82f6, #6366f1);
-      color: #fff; border: none;
-      border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
-      white-space: nowrap; transition: all .2s;
-      box-shadow: 0 2px 12px rgba(99,102,241,0.35);
+      border: none;
+      border-radius: 9999px;
+      padding: 12px 18px;
+      background: #fff;
+      color: #000;
+      font-family: system-ui, sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
     }
-    .act-row button:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(99,102,241,0.45); }
-    .act-row button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-    #act-status { min-height: 18px; font-size: 0.82rem; font-weight: 600; padding-left: 2px; }
-    #act-status.ok  { color: #16a34a; }
-    #act-status.err { color: #dc2626; }
-    .act-hint { font-size: 0.78rem; color: #94a3b8; padding-left: 2px; }
-    .act-hint a { color: #3b82f6; text-decoration: none; }
-    .act-hint a:hover { text-decoration: underline; }
+    .act-row button:disabled { opacity: 0.5; }
+    #act-status {
+      width: 100%;
+      font-family: system-ui, sans-serif;
+      font-size: 0.85rem;
+      min-height: 18px;
+    }
+    #act-status.ok { color: #86efac; }
+    #act-status.err { color: #fda4af; }
+    .act-hint {
+      width: 100%;
+      font-family: system-ui, sans-serif;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.45);
+    }
+    .act-hint a { text-decoration: underline; color: rgba(255,255,255,0.7); }
 
-    /* ── Responsive ── */
-    @media (max-width: 900px) {
-      nav { padding: 0 20px; }
-      .hero { flex-direction: column; padding: 60px 24px; gap: 44px; text-align: center; min-height: auto; }
-      .hero h1 { font-size: 2.3rem; }
-      .hero > .hero-text > p { max-width: 100%; }
-      .hero-actions { justify-content: center; }
-      .mockup-wrap { width: 100%; max-width: 320px; margin: 0 auto; }
-      .trust-bar { gap: 20px; padding: 24px; }
-      .pain, .features, .demo, .how, .pricing, .final-cta { padding: 64px 24px; }
-      .pain h2, .final-cta h2 { font-size: 1.9rem; }
-      .demo-compare { grid-template-columns: 1fr; }
-      .demo-arrow-col { display: none; }
-      .demo-before { border-right: none; border-bottom: 1px solid #f0f0f0; }
-      .step:not(:last-child)::after { display: none; }
-      footer { flex-direction: column; align-items: flex-start; padding: 36px 24px; }
-      .activate-card { flex-direction: column; gap: 18px; padding: 24px 20px; }
-      .act-sub { white-space: normal; }
+    .final-panel {
+      text-align: center;
+      padding: 48px 28px;
+    }
+    .final-panel h2 {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+    .final-panel p {
+      font-family: system-ui, sans-serif;
+      color: rgba(255,255,255,0.75);
+      max-width: 28rem;
+      margin: 0 auto 24px;
+      line-height: 1.7;
+    }
+    .final-panel .btn-solid {
+      display: inline-flex;
+      background: #fff;
+      color: #000;
+      font-family: system-ui, sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 12px 26px;
+      border-radius: 9999px;
+      transition: transform 0.2s;
+    }
+    .final-panel .btn-solid:hover { transform: translateY(-1px); }
+
+    footer {
+      padding: 28px 20px 40px;
+      max-width: var(--max);
+      margin: 0 auto;
+      display: flex; flex-wrap: wrap; gap: 16px;
+      justify-content: space-between; align-items: center;
+      font-family: system-ui, sans-serif;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.55);
+    }
+    footer .brand {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: #fff;
+    }
+    footer .links { display: flex; flex-wrap: wrap; gap: 16px; }
+    footer .links a:hover { color: #fff; }
+
+    /* Scroll reveal for panels */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+    }
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .stage-videos video { transition: none; animation: none !important; }
+      .reveal { opacity: 1; transform: none; }
     }
   </style>
 </head>
 <body>
 
-<!-- Nav -->
-<nav>
-  <div class="logo">✦ NativeProse</div>
-  <div class="nav-links">
-    <a href="#features">Features</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#activate">Activate</a>
-    <a href="/blog/">Blog</a>
-    <a href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj" id="chrome-nav-link" class="nav-cta">Add to Chrome</a>
+<!-- Fixed cinematic stage -->
+<div class="stage" aria-hidden="true">
+  <div class="stage-videos" id="stage-videos">
+    <video muted autoplay playsinline loop preload="auto"></video>
+    <video muted autoplay playsinline loop preload="auto"></video>
+    <video muted autoplay playsinline loop preload="auto"></video>
+    <video muted autoplay playsinline loop preload="auto"></video>
   </div>
-</nav>
-
-<!-- Hero -->
-<section class="hero">
-  <div class="hero-text">
-    <div class="hero-badge">🌍 For ESL writers &amp; students worldwide</div>
-    <h1>Write English Like a <span class="hl">Native Speaker</span></h1>
-    <p>Stop worrying if your English sounds awkward. NativeProse instantly rewrites your text to sound natural, confident, and native — no matter your level.</p>
-    <div class="hero-actions">
-      <a href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj" class="btn-primary btn-bling" id="cta-btn">Add to Chrome — It's Free</a>
-      <a href="#demo" class="btn-ghost">See it in action →</a>
-    </div>
-    <p class="hero-hint">Works on Gmail, Google Docs, LinkedIn, and any website.</p>
-  </div>
-
-  <div class="hero-visual">
-    <div class="mockup-wrap">
-      <div class="mockup-glow"></div>
-      <div class="ext-popup">
-        <div class="ext-header">
-          <span class="ext-title">✦ NativeProse 👑</span>
-          <span class="ext-close">×</span>
-        </div>
-        <div class="ext-tabs">
-          <button class="ext-tab active" data-label="Native rewrite" data-changes="5" data-before="I want to inform you that I cannot attend the meeting because I have a schedule conflict." data-after="Just a heads-up — I won't be able to make the meeting. Something came up on my end.">Native</button>
-          <button class="ext-tab" data-label="Academic polish" data-changes="6" data-before="Exercise is good for health and people who do it regularly live longer." data-after="Regular physical activity is strongly associated with reduced mortality and improved long-term health outcomes.">Academic</button>
-          <button class="ext-tab" data-label="Professional tone" data-changes="4" data-before="I think we should maybe consider changing our approach to this project." data-after="I recommend we revisit our approach — there's a clear opportunity to improve outcomes.">Pro</button>
-          <button class="ext-tab" data-label="Simplified version" data-changes="5" data-before="The implementation of this solution necessitates the utilization of specialized expertise." data-after="This solution requires expert help to set up.">Simplify</button>
-          <button class="ext-tab" data-label="Translated to English 🇯🇵→🇬🇧" data-changes="0" data-before="私はこの会議に参加できません。スケジュールの都合があります。" data-after="I'm afraid I won't be able to join the meeting — I have a scheduling conflict on my end.">Translate</button>
-        </div>
-        <div class="ext-body">
-          <div class="ext-lbl">Your text</div>
-          <div class="ext-before" id="mockup-before">I want to inform you that I cannot attend the meeting because I have a schedule conflict.</div>
-          <div class="ext-arrow">↓</div>
-          <div class="ext-lbl" id="mockup-after-lbl">Native rewrite</div>
-          <div class="ext-after" id="mockup-after">Just a heads-up — I won't be able to make the meeting. Something came up on my end.</div>
-          <div class="ext-diff-row" id="ext-diff-row">
-            <button class="ext-diff-static" id="ext-diff-static">✨ 5 changes · see diff ▾</button>
-          </div>
-        </div>
-        <div class="ext-actions">
-          <button class="ext-btn ext-btn-p">Replace</button>
-          <button class="ext-btn ext-btn-s">Copy</button>
-          <button class="ext-btn ext-btn-s">↺ Again</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Trust bar -->
-<div class="trust-bar">
-  <div class="trust-item">🌍 Used in <strong>&nbsp;50+ countries</strong></div>
-  <div class="trust-item">⚡ <strong>Instant</strong>&nbsp;rewrites</div>
-  <div class="trust-item">🔒 <strong>Privacy</strong>&nbsp;first — no data stored</div>
-  <div class="trust-item">🌐 Works on&nbsp;<strong>any website</strong></div>
+  <div class="stage-shade"></div>
 </div>
 
-<!-- Pain -->
-<section class="pain">
-  <div class="sec-label">The Problem</div>
-  <h2>Your English gets the job done.<br>But it doesn't sound like you mean it.</h2>
-  <p>Grammar checkers fix your mistakes. But they can't make your English sound natural. That's what NativeProse is for.</p>
-  <div class="pain-cards">
-    <div class="pain-card">
-      <div class="pain-emoji">💼</div>
-      <h3>The ESL Professional</h3>
-      <p>Your email is grammatically correct, but it sounds stiff and translated. Colleagues can tell English isn't your first language.</p>
-    </div>
-    <div class="pain-card">
-      <div class="pain-emoji">🎓</div>
-      <h3>The International Student</h3>
-      <p>Your essay ideas are great, but the writing lacks the authority of native speakers. You want to sound scholarly, not just correct.</p>
-    </div>
-    <div class="pain-card">
-      <div class="pain-emoji">🌏</div>
-      <h3>The Global Communicator</h3>
-      <p>You write in English every day for international clients, but you're never sure if your message truly lands the way you intend.</p>
-    </div>
+<!-- Nav -->
+<header class="nav">
+  <div class="nav-inner">
+    <a href="#top" class="nav-logo">NativeProse</a>
+    <nav class="nav-pill liquid-glass" aria-label="Primary">
+      <a href="#how">How It Works</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/blog/">Blog</a>
+      <a class="btn-solid" href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj">Get Started</a>
+    </nav>
+    <button class="nav-burger liquid-glass" id="nav-burger" type="button" aria-label="Menu" aria-expanded="false">
+      <svg class="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <svg class="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
   </div>
-</section>
+</header>
 
-<!-- Features -->
-<section class="features" id="features">
-  <div class="sec-header">
-    <div class="sec-label">What NativeProse Does</div>
-    <h2>Five ways to perfect your English</h2>
-    <p>Select any text on any webpage, choose your style, and get a polished result instantly.</p>
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-panel">
+    <a href="#how">How It Works</a>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/blog/">Blog</a>
+    <a class="btn-solid" href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj">Get Started</a>
   </div>
-  <div class="features-grid">
-    <div class="feat-card">
-      <div class="feat-icon">🗣️</div>
-      <h3>Native</h3>
-      <p>Rewrite your English to sound exactly like a fluent native speaker — natural phrasing, idioms, and rhythm included.</p>
-      <span class="feat-tag">⭐ Core Feature</span>
-    </div>
-    <div class="feat-card">
-      <div class="feat-icon">🎓</div>
-      <h3>Academic</h3>
-      <p>Polish essays and research papers to sound scholarly. Reduces AI-detectable phrasing. Perfect for university writing.</p>
-      <span class="feat-tag">For Students</span>
-    </div>
-    <div class="feat-card">
-      <div class="feat-icon">💼</div>
-      <h3>Professional</h3>
-      <p>Sharpen emails, reports, and LinkedIn posts to sound confident and authoritative in any professional setting.</p>
-      <span class="feat-tag">For Work</span>
-    </div>
-    <div class="feat-card">
-      <div class="feat-icon">✂️</div>
-      <h3>Simplify</h3>
-      <p>Cut through the complexity. Get clear, direct writing that anyone can understand at a glance.</p>
-      <span class="feat-tag">Clear &amp; Direct</span>
-    </div>
-    <div class="feat-card">
-      <div class="feat-icon">🌐</div>
-      <h3>Translate</h3>
-      <p>Translate in any direction — turn your native language into fluent English, or convert English into 20+ languages. Powered by Gemini AI.</p>
-      <span class="feat-tag">20+ Languages · Both Ways</span>
-    </div>
-  </div>
-</section>
+</div>
 
-<!-- Changes Showcase -->
-<section class="changes-showcase" id="changes">
-  <div class="changes-inner">
-    <div class="changes-text">
-      <div class="sec-label">Word-level Diff</div>
-      <h2>See exactly what<br>NativeProse changed.</h2>
-      <p>After every rewrite, tap once to reveal a word-by-word comparison — green for added, red for removed. Clean view by default, diff on demand.</p>
-      <ul class="changes-points">
-        <li>
-          <span class="cp-dot cp-green">✓</span>
-          <span><strong>Green highlights</strong> show every word NativeProse added or rewrote</span>
-        </li>
-        <li>
-          <span class="cp-dot cp-red">✗</span>
-          <span><strong>Red strikethrough</strong> shows what was replaced or removed</span>
-        </li>
-        <li>
-          <span class="cp-dot cp-blue">◎</span>
-          <span><strong>Clean by default</strong> — diff is hidden until you tap the button</span>
-        </li>
-      </ul>
-      <a href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj" class="btn-primary" style="display:inline-flex;font-size:0.88rem;padding:12px 24px;" id="changes-cta-btn">Try it free →</a>
-    </div>
-    <div class="diff-panel-wrap">
-      <div class="diff-panel-glow"></div>
-      <div class="diff-mini-panel">
-        <div class="dmp-header">
-          <span class="dmp-title">✦ NativeProse</span>
-          <span class="dmp-close">×</span>
+<!-- Scrollable content over the same stage -->
+<main class="scroll" id="top">
+  <section class="hero">
+    <div class="hero-main">
+      <div class="badge liquid-glass theme-muted ui">Free · 10 rewrites/day · no signup</div>
+      <h1 class="theme-text">Write English like<br>it's your first language</h1>
+      <p class="hero-anchor ui"><span class="dot" aria-hidden="true"></span>Chrome extension · select text · Alt+Q</p>
+      <p class="hero-sub theme-muted">Select any text, press Alt+Q — rewrite it to sound natural and native in one click.</p>
+      <div class="hero-cta">
+        <a class="btn-hero-primary" href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj">Add to Chrome — It's Free</a>
+        <p class="hero-cta-hint theme-soft ui">Works on Gmail, Docs, LinkedIn &amp; any website</p>
+      </div>
+      <div class="hero-trust ui" aria-label="Key benefits">
+        <span>Alt+Q instant rewrite</span>
+        <span>10 free / day</span>
+        <span>No account needed</span>
+      </div>
+
+      <div class="demo-float" id="demo-float" aria-label="NativeProse demo">
+        <div class="demo-head"><span>✦ NativeProse</span><span class="x">×</span></div>
+        <div class="demo-tabs">
+          <button class="demo-tab is-on" type="button" data-i="0">Native</button>
+          <button class="demo-tab" type="button" data-i="1">Academic</button>
+          <button class="demo-tab" type="button" data-i="2">Pro</button>
+          <button class="demo-tab" type="button" data-i="3">Simplify</button>
+          <button class="demo-tab" type="button" data-i="4">Translate</button>
         </div>
-        <div class="dmp-modes">
-          <button class="dmp-mode">Native</button>
-          <button class="dmp-mode dmp-active">Academic</button>
-          <button class="dmp-mode">Pro</button>
-          <button class="dmp-mode">Simplify</button>
-        </div>
-        <div class="dmp-body">
-          <div class="dmp-lbl">Your text</div>
-          <div class="dmp-orig-box">The study show that exercise have positive effect on mental health of people.</div>
-          <div class="dmp-arrow-lbl">↓</div>
-          <div class="dmp-lbl">Academic polish</div>
-          <div class="dmp-result-box" id="dmp-result">Research demonstrates that regular exercise has a significant positive effect on mental health.</div>
-          <div class="dmp-changes-row">
-            <button class="dmp-diff-toggle" id="dmp-diff-toggle">✨ 5 changes · see diff ▾</button>
+        <div class="demo-body">
+          <div class="demo-lbl">Your text</div>
+          <div class="demo-before" id="demo-before">I want to inform you that I cannot attend the meeting because I have a schedule conflict.</div>
+          <div class="demo-arrow">↓</div>
+          <div class="demo-lbl" id="demo-after-lbl">Native rewrite</div>
+          <div class="demo-after" id="demo-after"></div>
+          <div class="demo-diff-row" id="demo-diff-row">
+            <button class="demo-diff-btn" id="demo-diff-btn" type="button">✨ 5 changes · see diff ▾</button>
           </div>
         </div>
-        <div class="dmp-footer-actions">
-          <button class="dmp-act dmp-act-p">Replace</button>
-          <button class="dmp-act dmp-act-s">Copy</button>
-          <button class="dmp-act dmp-act-s">↺ Again</button>
+        <div class="demo-actions">
+          <span class="p">Replace</span>
+          <span class="s">Copy</span>
+          <span class="s">↺ Again</span>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Demo -->
-<section class="demo" id="demo">
-  <div class="sec-header">
-    <div class="sec-label">See the Difference</div>
-    <h2>Before and After NativeProse</h2>
-    <p>Real examples of how NativeProse transforms everyday English.</p>
-  </div>
-  <div class="demo-tabs">
-    <button class="demo-tab-btn active" onclick="showDemo('email',this)">Work Email</button>
-    <button class="demo-tab-btn" onclick="showDemo('essay',this)">Academic Essay</button>
-    <button class="demo-tab-btn" onclick="showDemo('linkedin',this)">LinkedIn Post</button>
-  </div>
-  <div class="demo-content">
-    <div class="demo-panel active" id="demo-email">
-      <div class="demo-compare">
-        <div class="demo-side demo-before">
-          <div class="demo-side-lbl">⚠ Before NativeProse</div>
-          <div class="demo-text">Dear Mr. Johnson, I want to inform you that I cannot attend the meeting which is scheduled for tomorrow because I have a schedule conflict. I am sorry for this inconvenience. Can we reschedule to next week?</div>
+  <div class="panel-wrap">
+    <section class="panel liquid-glass-strong reveal" id="how">
+      <div class="panel-kicker">How it works</div>
+      <h2>Three steps to better English</h2>
+      <p class="panel-lead">No account. No setup. Just install and write.</p>
+      <div class="steps">
+        <div class="step liquid-glass">
+          <div class="num">01</div>
+          <h3>Install</h3>
+          <p>Add NativeProse to Chrome in one click. Free to start.</p>
         </div>
-        <div class="demo-arrow-col">→</div>
-        <div class="demo-side demo-after">
-          <div class="demo-side-lbl">✦ After NativeProse (Native)</div>
-          <div class="demo-text">Hi David, something's come up and I won't be able to make tomorrow's meeting — sorry for the short notice. Any chance we could push it to next week? Happy to work around your schedule.</div>
+        <div class="step liquid-glass">
+          <div class="num">02</div>
+          <h3>Select</h3>
+          <p>Highlight any text on any webpage — emails, docs, posts.</p>
+        </div>
+        <div class="step liquid-glass">
+          <div class="num">03</div>
+          <h3>Rewrite</h3>
+          <p>Press Alt+Q, pick a style, and replace instantly.</p>
         </div>
       </div>
-    </div>
-    <div class="demo-panel" id="demo-essay">
-      <div class="demo-compare">
-        <div class="demo-side demo-before">
-          <div class="demo-side-lbl">⚠ Before NativeProse</div>
-          <div class="demo-text">Many studies show that using social media a lot is bad for mental health of teenagers. They spend too much time on it and this makes them feel sad and lonely. This is a big problem in today's society.</div>
-        </div>
-        <div class="demo-arrow-col">→</div>
-        <div class="demo-side demo-after">
-          <div class="demo-side-lbl">✦ After NativeProse (Academic)</div>
-          <div class="demo-text">Extensive research indicates a significant correlation between excessive social media use and deteriorating mental health outcomes in adolescents. Prolonged screen engagement has been associated with heightened levels of depression and social isolation — a phenomenon of growing concern in contemporary discourse.</div>
-        </div>
-      </div>
-    </div>
-    <div class="demo-panel" id="demo-linkedin">
-      <div class="demo-compare">
-        <div class="demo-side demo-before">
-          <div class="demo-side-lbl">⚠ Before NativeProse</div>
-          <div class="demo-text">I am very happy to share that I finished my MBA program. It was very hard and I learned many things. I want to thank my teachers and classmates for their help. Now I am looking for job opportunities.</div>
-        </div>
-        <div class="demo-arrow-col">→</div>
-        <div class="demo-side demo-after">
-          <div class="demo-side-lbl">✦ After NativeProse (Professional)</div>
-          <div class="demo-text">Thrilled to share that I've completed my MBA — an incredibly challenging and rewarding journey. Huge thanks to my professors and cohort for the growth along the way. Now excited to bring these skills to new opportunities. Open to connecting! 🎓</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- How it works -->
-<section class="how" id="how">
-  <div class="sec-header">
-    <div class="sec-label">Getting Started</div>
-    <h2>Three steps to better English</h2>
-  </div>
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <h3>Install the Extension</h3>
-      <p>Add NativeProse to Chrome in one click. Free to start — no account required.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <h3>Select Your Text</h3>
-      <p>Highlight any text on any webpage — emails, documents, social posts, anything.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <h3>Choose Your Style</h3>
-      <p>Pick Native, Academic, Professional, Simplify, or Translate. Get your result instantly.</p>
-    </div>
-  </div>
-</section>
-
-<!-- Pricing -->
-<section class="pricing" id="pricing">
-  <div class="sec-header">
-    <div class="sec-label">Pricing</div>
-    <h2>Simple, affordable pricing</h2>
-    <p>Start free. Upgrade when you're ready.</p>
-  </div>
-  <div class="pricing-cards">
-    <div class="price-card">
-      <div class="price-tier">Free</div>
-      <div class="price-val">$0</div>
-      <div class="price-desc">Try NativeProse risk-free. No credit card needed.</div>
-      <ul class="price-features">
-        <li>10 rewrites per day</li>
-        <li>Native, Academic &amp; Simplify modes</li>
-        <li>Works on all websites</li>
-      </ul>
-      <a href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj" class="price-btn price-btn-outline" id="free-cta">Add to Chrome</a>
-    </div>
-    <div class="price-card pop">
-      <div class="pop-badge">✦ Most Popular</div>
-      <div class="price-tier">Pro</div>
-      <div class="price-val">$9<span>/mo</span></div>
-      <div class="price-desc">For professionals and students who write in English daily.</div>
-      <ul class="price-features">
-        <li>Unlimited rewrites</li>
-        <li>All 5 modes (incl. Academic)</li>
-        <li>Translate between 20+ languages</li>
-        <li>Priority processing</li>
-      </ul>
-      <a href="https://nativeprose.com/pricing?plan=monthly" class="price-btn price-btn-fill" id="pro-cta">Get Pro</a>
-    </div>
-    <div class="price-card">
-      <div class="price-tier">Annual</div>
-      <div class="price-val">$79<span>/yr</span></div>
-      <div class="price-desc">Best value — save $29 vs. monthly billing.</div>
-      <ul class="price-features">
-        <li>Everything in Pro</li>
-        <li>Save 27% vs monthly</li>
-        <li>Priority support</li>
-      </ul>
-      <a href="https://nativeprose.com/pricing?plan=annual" class="price-btn price-btn-outline">Get Annual</a>
-    </div>
-  </div>
-
-  <!-- Activate inside pricing section -->
-  <div class="activate-wrap" id="activate">
-    <div class="activate-card">
-      <div class="act-left">
-        <div class="act-title">🔑 Already purchased?</div>
-        <div class="act-sub">Paste your License Key to unlock Pro instantly.</div>
+    <section class="panel liquid-glass-strong reveal" id="features">
+      <div class="panel-kicker">Features</div>
+      <h2>Five ways to perfect your English</h2>
+      <p class="panel-lead">One extension. Five modes. Instant results wherever you write.</p>
+      <div class="grid-5">
+        <article class="mini-card liquid-glass">
+          <span class="tag">Core</span>
+          <h3>Native</h3>
+          <p>Sound like a fluent native speaker — natural phrasing and rhythm.</p>
+        </article>
+        <article class="mini-card liquid-glass">
+          <span class="tag">Students</span>
+          <h3>Academic</h3>
+          <p>Polish essays and papers to sound scholarly and precise.</p>
+        </article>
+        <article class="mini-card liquid-glass">
+          <span class="tag">Work</span>
+          <h3>Professional</h3>
+          <p>Sharpen emails and LinkedIn posts with confident tone.</p>
+        </article>
+        <article class="mini-card liquid-glass">
+          <span class="tag">Clarity</span>
+          <h3>Simplify</h3>
+          <p>Cut complexity. Clear writing anyone can understand.</p>
+        </article>
+        <article class="mini-card liquid-glass">
+          <span class="tag">20+ languages</span>
+          <h3>Translate</h3>
+          <p>Any language → fluent English, or English into 20+ languages.</p>
+        </article>
       </div>
-      <div class="act-right">
+    </section>
+
+    <section class="panel liquid-glass-strong reveal" id="pricing">
+      <div class="panel-kicker">Pricing</div>
+      <h2>Simple, honest pricing</h2>
+      <p class="panel-lead">Start free. Upgrade when you're ready.</p>
+      <div class="pricing-grid">
+        <div class="price-card liquid-glass">
+          <div class="tier">Free</div>
+          <div class="val">$0</div>
+          <div class="desc">Try risk-free. No credit card needed.</div>
+          <ul>
+            <li>10 rewrites per day</li>
+            <li>Native, Academic &amp; Simplify</li>
+            <li>Works on all websites</li>
+          </ul>
+          <a class="price-btn ghost" href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj">Add to Chrome</a>
+        </div>
+        <div class="price-card liquid-glass pop">
+          <div class="tier">Pro</div>
+          <div class="val">$9<span>/mo</span></div>
+          <div class="desc">For people who write in English daily.</div>
+          <ul>
+            <li>Unlimited rewrites</li>
+            <li>All 5 modes</li>
+            <li>Translate 20+ languages</li>
+            <li>Priority processing</li>
+          </ul>
+          <a class="price-btn" href="/pricing?plan=monthly">Get Pro</a>
+        </div>
+        <div class="price-card liquid-glass">
+          <div class="tier">Annual</div>
+          <div class="val">$79<span>/yr</span></div>
+          <div class="desc">Best value — save $29 vs monthly.</div>
+          <ul>
+            <li>Everything in Pro</li>
+            <li>Save 27%</li>
+            <li>Priority support</li>
+          </ul>
+          <a class="price-btn ghost" href="/pricing?plan=annual">Get Annual</a>
+        </div>
+      </div>
+
+      <div class="activate liquid-glass" id="activate">
+        <div>
+          <h3>Already purchased?</h3>
+          <p>Paste your license key to unlock Pro.</p>
+        </div>
         <div class="act-row">
           <input id="act-key-input" type="text" placeholder="WM-XXXXXXXXXXXXXXXX" spellcheck="false" autocomplete="off" />
-          <button id="act-submit-btn">Activate</button>
+          <button id="act-submit-btn" type="button">Activate</button>
         </div>
         <div id="act-status"></div>
-        <div class="act-hint">Extension must be installed · <a href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj" id="act-install-link">Get NativeProse →</a></div>
+        <div class="act-hint">Extension must be installed · <a href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj">Get NativeProse</a></div>
       </div>
+    </section>
+
+    <section class="panel liquid-glass-strong final-panel reveal">
+      <h2>Start writing like<br>a native speaker</h2>
+      <p>Join writers worldwide who use NativeProse every day.</p>
+      <a class="btn-solid" href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj">Add to Chrome — It's Free</a>
+    </section>
+  </div>
+
+  <footer>
+    <div class="brand">NativeProse</div>
+    <div class="links">
+      <a href="/pricing">Pricing</a>
+      <a href="/blog/">Blog</a>
+      <a href="https://zhonglin9894-source.github.io/nativeprose-privacy/terms.html">Terms</a>
+      <a href="https://zhonglin9894-source.github.io/nativeprose-privacy/">Privacy</a>
+      <a href="mailto:zhonglin9894@gmail.com">Contact</a>
     </div>
-  </div>
-</section>
+    <div>© 2026 NativeProse</div>
+  </footer>
+</main>
 
-<!-- Final CTA -->
-<section class="final-cta">
-  <div class="cta-inner">
-    <div class="cta-badge">✦ Free to get started</div>
-    <h2>Start Writing Like a<br>Native Speaker Today</h2>
-    <p>Join writers from India, Japan, Korea, Southeast Asia, and beyond who use NativeProse every day.</p>
-    <a href="https://chromewebstore.google.com/detail/nativeprose-ai-writing-assistant/ofppbapdpfadeakhmfailibbkedigmaj" class="btn-white btn-bling" id="final-btn">Add to Chrome — It's Free</a>
-    <p class="cta-sub">No credit card required · Free plan included</p>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer>
-  <div class="footer-logo">✦ NativeProse</div>
-  <div class="footer-links">
-    <a href="https://nativeprose.com/pricing">Pricing</a>
-    <a href="https://zhonglin9894-source.github.io/nativeprose-privacy/terms.html">Terms</a>
-    <a href="https://zhonglin9894-source.github.io/nativeprose-privacy/">Privacy</a>
-    <a href="https://zhonglin9894-source.github.io/nativeprose-privacy/refund.html">Refund</a>
-    <a href="mailto:zhonglin9894@gmail.com">Contact Us</a>
-  </div>
-  <div class="footer-copy">© 2026 NativeProse. All rights reserved.</div>
-</footer>
+<!-- Background scene picker (corner dots) -->
+<div class="scene-dots" role="tablist" aria-label="Background scenes">
+  <button type="button" class="is-active" data-index="0" aria-label="Golden Hour"></button>
+  <button type="button" data-index="1" aria-label="Still Water"></button>
+  <button type="button" data-index="2" aria-label="Deep Woods"></button>
+  <button type="button" data-index="3" aria-label="Quiet Dawn"></button>
+</div>
 
 <script>
-  /* ── Demo before/after auto-scroll ── */
-  const demoTypes = ['email', 'essay', 'linkedin'];
-  const demoBtns = Array.from(document.querySelectorAll('.demo-tab-btn'));
-  let demoIdx = 0;
-  let demoPaused = false;
-  let demoResumeTimer;
-  let demoTimer;
+(function () {
+  // Original motionsites template clips (CloudFront CDN)
+  const URLS = [
+    'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260702_081127_0992a171-d3c6-4978-8213-0ec5df8b6d63.mp4',
+    'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260702_092026_dd05b805-ea0f-40b2-8c52-332b88502592.mp4',
+    'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260702_081042_df7202bf-bd80-4b2b-bbc6-1f09ba2870e9.mp4',
+    'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260702_080959_4cac5234-3573-464e-a5b7-76b94b8a7d61.mp4',
+  ];
+  const SCENE_LABELS = ['Golden Hour', 'Still Water', 'Deep Woods', 'Quiet Dawn'];
 
-  function showDemo(type, btn, byUser) {
-    document.querySelectorAll('.demo-panel').forEach(p => p.classList.remove('active'));
-    demoBtns.forEach(b => b.classList.remove('active'));
-    document.getElementById('demo-' + type).classList.add('active');
-    btn.classList.add('active');
-    demoIdx = demoTypes.indexOf(type);
-    if (byUser) {
-      demoPaused = true;
-      clearTimeout(demoResumeTimer);
-      demoResumeTimer = setTimeout(() => { demoPaused = false; }, 5000);
-    }
+  const videos = Array.from(document.querySelectorAll('#stage-videos video'));
+  const buttons = Array.from(document.querySelectorAll('.scene-dots button'));
+  const loaded = new Set();
+  let activeVideo = -1;
+  let isTransitioning = false;
+
+  function ensureLoaded(index) {
+    const v = videos[index];
+    if (!v || loaded.has(index)) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    v.playsInline = true;
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
+    v.preload = index === 0 ? 'auto' : 'metadata';
+    v.src = URLS[index];
+    v.load();
+    loaded.add(index);
   }
 
-  demoBtns.forEach((btn, i) => {
-    btn.addEventListener('click', function() { showDemo(demoTypes[i], this, true); });
+  videos.forEach((v, i) => {
+    v.muted = true;
+    v.playsInline = true;
+    if (i === 0) ensureLoaded(0);
+    else v.preload = 'none';
   });
 
-  demoTimer = setInterval(() => {
-    if (demoPaused) return;
-    demoIdx = (demoIdx + 1) % demoTypes.length;
-    const panel = document.getElementById('demo-' + demoTypes[demoIdx]);
-    panel.style.opacity = '0';
-    demoBtns.forEach(b => b.classList.remove('active'));
-    demoBtns[demoIdx].classList.add('active');
-    document.querySelectorAll('.demo-panel').forEach(p => p.classList.remove('active'));
-    panel.classList.add('active');
-    panel.style.opacity = '0';
-    requestAnimationFrame(() => { panel.style.transition = 'opacity 0.4s'; panel.style.opacity = '1'; });
-    setTimeout(() => { panel.style.transition = ''; }, 450);
-  }, 3500);
-
-  /* ── Steps sequential highlight ── */
-  const steps = Array.from(document.querySelectorAll('.step'));
-  let stepIdx = 0;
-  function highlightStep() {
-    steps.forEach(s => s.classList.remove('active'));
-    steps[stepIdx].classList.add('active');
-    stepIdx = (stepIdx + 1) % steps.length;
-  }
-  highlightStep();
-  setInterval(highlightStep, 1600);
-
-  /* ── Ext-popup mockup auto-cycle with typewriter ── */
-  const extTabs      = Array.from(document.querySelectorAll('.ext-tab'));
-  const mockBefore   = document.getElementById('mockup-before');
-  const mockAfter    = document.getElementById('mockup-after');
-  const mockAfterLbl = document.getElementById('mockup-after-lbl');
-  const extDiffRow   = document.getElementById('ext-diff-row');
-  const extDiffStatic = document.getElementById('ext-diff-static');
-  let autoIdx = 0;
-  let autoTimer;
-  let typingTimer   = null;
-  let isDiffShowing = false;
-  let heroToken     = 0;
-  let heroPaused    = false;
-
-  function triggerRipple(btn) {
-    const r = document.createElement('span');
-    r.className = 'btn-ripple';
-    btn.appendChild(r);
-    setTimeout(() => { if (r.parentNode) r.remove(); }, 700);
+  function playVideo(v) {
+    v.muted = true;
+    const p = v.play();
+    if (p && p.catch) p.catch(() => {});
   }
 
-  const diffTexts = [
-    `<mark class="dm-del">I want to inform you that I cannot attend</mark><mark class="dm-ins">Just a heads-up — I won't be able to make</mark> the meeting. <mark class="dm-del">Because I have a schedule conflict.</mark><mark class="dm-ins">Something came up on my end.</mark>`,
-    `<mark class="dm-del">Exercise is good for</mark><mark class="dm-ins">Regular physical activity is strongly associated with reduced mortality and improved long-term</mark> health<mark class="dm-del"> and people who do it regularly live longer.</mark><mark class="dm-ins"> outcomes.</mark>`,
-    `<mark class="dm-del">I think</mark><mark class="dm-ins">I recommend</mark> we <mark class="dm-del">should maybe consider changing</mark><mark class="dm-ins">revisit</mark> our approach<mark class="dm-del"> to this project.</mark><mark class="dm-ins"> — there's a clear opportunity to improve outcomes.</mark>`,
-    `<mark class="dm-del">The implementation of this</mark><mark class="dm-ins">This</mark> solution <mark class="dm-del">necessitates the utilization of specialized expertise.</mark><mark class="dm-ins">requires expert help to set up.</mark>`,
-    null
+  function setActive(index, force) {
+    if (!force && (index === activeVideo || isTransitioning)) return;
+    ensureLoaded(index);
+    isTransitioning = true;
+    activeVideo = index;
+
+    videos.forEach((v, i) => {
+      const on = i === index;
+      v.classList.toggle('is-active', on);
+      if (on) playVideo(v);
+    });
+    buttons.forEach((b, i) => {
+      b.classList.toggle('is-active', i === index);
+      b.setAttribute('aria-label', SCENE_LABELS[i] + (i === index ? ' (active)' : ''));
+    });
+    document.body.classList.toggle('is-dark-scene', index === 2);
+
+    // Preload next scene in background
+    ensureLoaded((index + 1) % videos.length);
+
+    setTimeout(() => { isTransitioning = false; }, 1000);
+  }
+
+  // Start first video as soon as it can play — no click needed
+  function bootFirstVideo() {
+    const first = videos[0];
+    const start = () => setActive(0, true);
+    if (first.readyState >= 2) start();
+    else {
+      first.addEventListener('loadeddata', start, { once: true });
+      first.addEventListener('canplay', start, { once: true });
+      // Fallback if events already fired
+      setTimeout(start, 400);
+    }
+  }
+  bootFirstVideo();
+
+  // Retry play on first user gesture (browser autoplay policies)
+  const unlock = () => {
+    if (activeVideo >= 0) playVideo(videos[activeVideo]);
+    else setActive(0, true);
+  };
+  ['pointerdown', 'touchstart', 'keydown'].forEach(ev => {
+    window.addEventListener(ev, unlock, { once: true, passive: true });
+  });
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      setActive(Number(btn.dataset.index));
+      resetAuto();
+    });
+  });
+
+  let autoTimer = null;
+  function resetAuto() {
+    clearInterval(autoTimer);
+    autoTimer = setInterval(() => {
+      const next = (Math.max(activeVideo, 0) + 1) % videos.length;
+      setActive(next);
+    }, 8000);
+  }
+  resetAuto();
+
+  // Mobile menu
+  const burger = document.getElementById('nav-burger');
+  const menu = document.getElementById('mobile-menu');
+  function closeMenu() {
+    menu.classList.remove('is-open');
+    burger.classList.remove('is-open');
+    burger.setAttribute('aria-expanded', 'false');
+  }
+  burger.addEventListener('click', () => {
+    const open = menu.classList.toggle('is-open');
+    burger.classList.toggle('is-open', open);
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  menu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+  menu.addEventListener('click', (e) => { if (e.target === menu) closeMenu(); });
+
+  // Panel reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  reveals.forEach(el => io.observe(el));
+})();
+
+// Product demo typewriter
+(function () {
+  const samples = [
+    {
+      label: 'Native rewrite', changes: 5,
+      before: 'I want to inform you that I cannot attend the meeting because I have a schedule conflict.',
+      after: "Just a heads-up — I won't be able to make the meeting. Something came up on my end.",
+      diff: `<mark class="dm-del">I want to inform you that I cannot attend</mark><mark class="dm-ins">Just a heads-up — I won't be able to make</mark> the meeting. <mark class="dm-del">Because I have a schedule conflict.</mark><mark class="dm-ins">Something came up on my end.</mark>`,
+    },
+    {
+      label: 'Academic polish', changes: 6,
+      before: 'Exercise is good for health and people who do it regularly live longer.',
+      after: 'Regular physical activity is strongly associated with reduced mortality and improved long-term health outcomes.',
+      diff: `<mark class="dm-del">Exercise is good for</mark><mark class="dm-ins">Regular physical activity is strongly associated with reduced mortality and improved long-term</mark> health<mark class="dm-del"> and people who do it regularly live longer.</mark><mark class="dm-ins"> outcomes.</mark>`,
+    },
+    {
+      label: 'Professional tone', changes: 4,
+      before: 'I think we should maybe consider changing our approach to this project.',
+      after: "I recommend we revisit our approach — there's a clear opportunity to improve outcomes.",
+      diff: `<mark class="dm-del">I think</mark><mark class="dm-ins">I recommend</mark> we <mark class="dm-del">should maybe consider changing</mark><mark class="dm-ins">revisit</mark> our approach<mark class="dm-del"> to this project.</mark><mark class="dm-ins"> — there's a clear opportunity to improve outcomes.</mark>`,
+    },
+    {
+      label: 'Simplified version', changes: 5,
+      before: 'The implementation of this solution necessitates the utilization of specialized expertise.',
+      after: 'This solution requires expert help to set up.',
+      diff: `<mark class="dm-del">The implementation of this</mark><mark class="dm-ins">This</mark> solution <mark class="dm-del">necessitates the utilization of specialized expertise.</mark><mark class="dm-ins">requires expert help to set up.</mark>`,
+    },
+    {
+      label: 'Translated to English', changes: 0,
+      before: '私はこの会議に参加できません。スケジュールの都合があります。',
+      after: "I'm afraid I won't be able to join the meeting — I have a scheduling conflict on my end.",
+      diff: null,
+    },
   ];
 
-  function activateTab(tab) {
-    const token = ++heroToken;
-    extTabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    if (typingTimer) { clearInterval(typingTimer); typingTimer = null; }
-    if (extDiffRow) extDiffRow.classList.remove('visible');
-    isDiffShowing = false;
-    if (extDiffStatic) extDiffStatic.classList.remove('active');
+  const tabs = Array.from(document.querySelectorAll('.demo-tab'));
+  const beforeEl = document.getElementById('demo-before');
+  const afterEl = document.getElementById('demo-after');
+  const labelEl = document.getElementById('demo-after-lbl');
+  const diffRow = document.getElementById('demo-diff-row');
+  const diffBtn = document.getElementById('demo-diff-btn');
+  if (!tabs.length || !afterEl) return;
 
-    const beforeText = tab.dataset.before;
-    const afterText  = tab.dataset.after;
-    const changes    = parseInt(tab.dataset.changes || '0');
-    const tabIdx     = extTabs.indexOf(tab);
-    if (mockAfterLbl && tab.dataset.label) mockAfterLbl.textContent = tab.dataset.label;
-    mockBefore.style.opacity = '0';
-    mockAfter.style.opacity  = '0';
-    mockAfter.textContent    = '';
+  let idx = 0;
+  let token = 0;
+  let typing = null;
+  let showingDiff = false;
+
+  function run(i) {
+    idx = i;
+    const s = samples[i];
+    const my = ++token;
+    tabs.forEach((t, n) => t.classList.toggle('is-on', n === i));
+    if (typing) { clearInterval(typing); typing = null; }
+    showingDiff = false;
+    diffRow.classList.remove('show');
+    labelEl.textContent = s.label;
+    beforeEl.style.opacity = '0';
+    afterEl.style.opacity = '0';
+    afterEl.textContent = '';
 
     setTimeout(() => {
-      if (heroToken !== token) return;
-      mockBefore.textContent   = beforeText;
-      mockBefore.style.opacity = '1';
-      let i = 0;
-      mockAfter.style.opacity = '1';
-      const speed = Math.max(18, Math.min(38, 1800 / afterText.length));
-      typingTimer = setInterval(() => {
-        if (heroToken !== token) { clearInterval(typingTimer); typingTimer = null; return; }
-        i++;
-        mockAfter.textContent = afterText.slice(0, i);
-        if (i >= afterText.length) {
-          clearInterval(typingTimer); typingTimer = null;
-          if (changes > 0 && extDiffRow && extDiffStatic) {
-            extDiffStatic.textContent = `✨ ${changes} changes · see diff ▾`;
-            extDiffRow.classList.add('visible');
-            // auto-demo ①: ripple → show diff (1s after typing done)
+      if (my !== token) return;
+      beforeEl.textContent = s.before;
+      beforeEl.style.opacity = '1';
+      afterEl.style.opacity = '1';
+      let n = 0;
+      const speed = Math.max(16, Math.min(36, 1600 / s.after.length));
+      typing = setInterval(() => {
+        if (my !== token) { clearInterval(typing); return; }
+        n++;
+        afterEl.textContent = s.after.slice(0, n);
+        if (n >= s.after.length) {
+          clearInterval(typing); typing = null;
+          if (s.changes > 0) {
+            diffBtn.textContent = `✨ ${s.changes} changes · see diff ▾`;
+            diffRow.classList.add('show');
             setTimeout(() => {
-              if (heroToken !== token || heroPaused) return;
-              triggerRipple(extDiffStatic);
+              if (my !== token || showingDiff) return;
+              afterEl.style.opacity = '0';
               setTimeout(() => {
-                if (heroToken !== token || heroPaused) return;
-                mockAfter.style.opacity = '0';
-                setTimeout(() => {
-                  if (heroToken !== token) return;
-                  mockAfter.innerHTML = diffTexts[tabIdx];
-                  mockAfter.style.opacity = '1';
-                }, 180);
-                extDiffStatic.textContent = `✨ ${changes} changes · hide diff ▴`;
-                extDiffStatic.classList.add('active');
-                isDiffShowing = true;
-              }, 350);
-            }, 1000);
-            // auto-demo ②: ripple → hide diff (1s + 350ms + 3s = 4350ms after typing done)
+                if (my !== token) return;
+                afterEl.innerHTML = s.diff;
+                afterEl.style.opacity = '1';
+                diffBtn.textContent = `✨ ${s.changes} changes · hide diff ▴`;
+                showingDiff = true;
+              }, 160);
+            }, 900);
             setTimeout(() => {
-              if (heroToken !== token || heroPaused) return;
-              triggerRipple(extDiffStatic);
+              if (my !== token || !showingDiff) return;
+              afterEl.style.opacity = '0';
               setTimeout(() => {
-                if (heroToken !== token || heroPaused) return;
-                mockAfter.style.opacity = '0';
-                setTimeout(() => {
-                  if (heroToken !== token) return;
-                  mockAfter.textContent = afterText;
-                  mockAfter.style.opacity = '1';
-                }, 180);
-                extDiffStatic.textContent = `✨ ${changes} changes · see diff ▾`;
-                extDiffStatic.classList.remove('active');
-                isDiffShowing = false;
-              }, 350);
-            }, 4350);
+                if (my !== token) return;
+                afterEl.textContent = s.after;
+                afterEl.style.opacity = '1';
+                diffBtn.textContent = `✨ ${s.changes} changes · see diff ▾`;
+                showingDiff = false;
+              }, 160);
+            }, 3200);
           }
         }
       }, speed);
-    }, 350);
+    }, 280);
   }
 
-  extTabs.forEach(tab => tab.addEventListener('click', function() { activateTab(this); }));
-
-  if (extDiffStatic) {
-    extDiffStatic.addEventListener('click', () => {
-      if (typingTimer) return;
-      const activeTab = extTabs.find(t => t.classList.contains('active'));
-      const tabIdx    = extTabs.indexOf(activeTab);
-      const diff      = diffTexts[tabIdx];
-      if (!diff) return;
-      if (!isDiffShowing) {
-        triggerRipple(extDiffStatic);
-        mockAfter.style.opacity = '0';
-        setTimeout(() => { mockAfter.innerHTML = diff; mockAfter.style.opacity = '1'; }, 180);
-        extDiffStatic.textContent = `✨ ${activeTab.dataset.changes} changes · hide diff ▴`;
-        extDiffStatic.classList.add('active');
-        isDiffShowing = true;
-      } else {
-        triggerRipple(extDiffStatic);
-        mockAfter.style.opacity = '0';
-        setTimeout(() => { mockAfter.textContent = activeTab.dataset.after; mockAfter.style.opacity = '1'; }, 180);
-        extDiffStatic.textContent = `✨ ${activeTab.dataset.changes} changes · see diff ▾`;
-        extDiffStatic.classList.remove('active');
-        isDiffShowing = false;
-      }
-    });
-  }
-
-  function cycleTab() {
-    autoIdx = (autoIdx + 1) % extTabs.length;
-    activateTab(extTabs[autoIdx]);
-  }
-
-  activateTab(extTabs[0]);
-  autoTimer = setInterval(cycleTab, 8500);
-  const popup = document.querySelector('.ext-popup');
-  popup.addEventListener('mouseenter', () => { heroPaused = true; clearInterval(autoTimer); });
-  popup.addEventListener('mouseleave', () => { heroPaused = false; autoTimer = setInterval(cycleTab, 8500); });
-
-  /* ── Diff showcase animation ── */
-  const dmpResult = document.getElementById('dmp-result');
-  const dmpToggle = document.getElementById('dmp-diff-toggle');
-  if (dmpResult && dmpToggle) {
-    const cleanText = 'Research demonstrates that regular exercise has a significant positive effect on mental health.';
-    const diffHTML  = '<mark class="dm-del">The study show that exercise have</mark><mark class="dm-ins">Research demonstrates that regular exercise has</mark> <mark class="dm-ins">a significant </mark>positive effect on mental health<mark class="dm-del"> of people</mark>.';
-    let dmpPhase = 0;
-
-    function stepDmp() {
-      if (dmpPhase === 0) {
-        // clean state — hold
-        dmpResult.textContent = cleanText;
-        dmpToggle.textContent = '✨ 5 changes · see diff ▾';
-        dmpToggle.classList.remove('pulsing','showing');
-        dmpPhase = 1;
-        setTimeout(stepDmp, 2800);
-      } else if (dmpPhase === 1) {
-        // simulate click with ripple
-        triggerRipple(dmpToggle);
-        dmpToggle.classList.add('pulsing');
-        dmpPhase = 2;
-        setTimeout(stepDmp, 700);
-      } else if (dmpPhase === 2) {
-        // reveal diff
-        dmpToggle.classList.remove('pulsing');
-        dmpToggle.classList.add('showing');
-        dmpToggle.textContent = '✨ 5 changes · hide diff ▴';
-        dmpResult.style.opacity = '0';
-        setTimeout(() => {
-          dmpResult.innerHTML = diffHTML;
-          dmpResult.style.opacity = '1';
-        }, 250);
-        dmpPhase = 3;
-        setTimeout(stepDmp, 3200);
-      } else {
-        // simulate click to hide diff
-        triggerRipple(dmpToggle);
-        dmpResult.style.opacity = '0';
-        setTimeout(() => {
-          dmpResult.textContent = cleanText;
-          dmpResult.style.opacity = '1';
-          dmpPhase = 0;
-          stepDmp();
-        }, 300);
-      }
+  tabs.forEach(t => t.addEventListener('click', () => run(Number(t.dataset.i))));
+  diffBtn.addEventListener('click', () => {
+    const s = samples[idx];
+    if (!s.diff || typing) return;
+    if (!showingDiff) {
+      afterEl.innerHTML = s.diff;
+      diffBtn.textContent = `✨ ${s.changes} changes · hide diff ▴`;
+      showingDiff = true;
+    } else {
+      afterEl.textContent = s.after;
+      diffBtn.textContent = `✨ ${s.changes} changes · see diff ▾`;
+      showingDiff = false;
     }
-    stepDmp();
-  }
+  });
 
-</script>
+  run(0);
+  setInterval(() => run((idx + 1) % samples.length), 9000);
+})();
 
-<script>
-// ── License Activation ──────────────────────────────────────
+// License activation
 (function () {
   const btn = document.getElementById('act-submit-btn');
   const inp = document.getElementById('act-key-input');
-  const st  = document.getElementById('act-status');
+  const st = document.getElementById('act-status');
   if (!btn || !inp) return;
 
   btn.addEventListener('click', () => {
     const key = inp.value.trim();
     if (!key) { st.textContent = 'Please enter your License Key.'; st.className = 'err'; return; }
-
     btn.disabled = true;
     btn.textContent = 'Activating…';
     st.textContent = '';
     st.className = '';
-
-    // Dispatch event to extension content script
     window.dispatchEvent(new CustomEvent('wm-license-activate', { detail: { key } }));
 
     const timer = setTimeout(() => {
@@ -1219,7 +1389,7 @@
         st.textContent = '✕ This key is already used on 2 devices (max limit).';
         st.className = 'err';
       } else {
-        st.textContent = '✕ Invalid or expired License Key. Check your email and try again.';
+        st.textContent = '✕ Invalid or expired License Key.';
         st.className = 'err';
       }
     });
@@ -1228,6 +1398,5 @@
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
 })();
 </script>
-
 </body>
 </html>
